@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "appName": "Hamroh",
+  "welcomeTitle": "Reliable rides between cities",
+  "login": "Log in",
+  "register": "Register",
+  "search": "Search",
+  "myTrips": "My trips",
+  "messages": "Messages",
+  "notifications": "Notifications",
+  "profile": "Profile",
+  "contactsLocked": "Contacts unlock after booking acceptance",
+  "confirmBooking": "Confirm booking"
+}

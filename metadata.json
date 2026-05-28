@@ -1,0 +1,6 @@
+{
+  "name": "Hamroh",
+  "description": "An intercity ride-sharing carpool mobile app for Tajikistan, connecting drivers and passengers. Features real-time bookings, driver verification, and dual-language (Russian/Tajik) support.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

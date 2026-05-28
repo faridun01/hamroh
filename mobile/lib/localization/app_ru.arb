@@ -1,0 +1,14 @@
+{
+  "@@locale": "ru",
+  "appName": "Hamroh",
+  "welcomeTitle": "Надежные поездки между городами Таджикистана",
+  "login": "Войти",
+  "register": "Зарегистрироваться",
+  "search": "Поиск",
+  "myTrips": "Мои поездки",
+  "messages": "Сообщения",
+  "notifications": "Уведомления",
+  "profile": "Профиль",
+  "contactsLocked": "Контакты откроются после подтверждения брони",
+  "confirmBooking": "Подтвердить бронь"
+}

@@ -1,0 +1,14 @@
+{
+  "@@locale": "tg",
+  "appName": "Hamroh",
+  "welcomeTitle": "Сафарҳои боэътимод байни шаҳрҳо",
+  "login": "Ворид шудан",
+  "register": "Рӯйхатгирӣ",
+  "search": "Ҷустуҷӯ",
+  "myTrips": "Сафарҳои ман",
+  "messages": "Паёмҳо",
+  "notifications": "Огоҳиҳо",
+  "profile": "Профил",
+  "contactsLocked": "Тамосҳо пас аз тасдиқи брон кушода мешаванд",
+  "confirmBooking": "Бронро тасдиқ кунед"
+}
