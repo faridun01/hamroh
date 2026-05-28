@@ -129,7 +129,6 @@ const today = '2026-05-25';
 const localizedCopy = {
   [Language.RU]: {
     languageName: 'Русский',
-    chooseLanguage: 'Выберите язык приложения',
     welcomeTitle: 'Добро пожаловать в Hamroh',
     welcome: 'Надёжные поездки между городами Таджикистана',
     login: 'Войти',
@@ -1155,9 +1154,8 @@ export default function PhoneSimulator({
                 <HamrohLogo compact />
               </div>
               <h1 className="text-4xl font-black tracking-tight text-[#0F172A]">Hamroh</h1>
-              <p className="text-[#64748B] mt-3 text-base leading-relaxed">{t.chooseLanguage}</p>
             </div>
-            {[['Русский', Language.RU], ['Тоҷикӣ', Language.TJ], ['English', Language.EN] as const].map(([label, lang]) => (
+            {([['Русский', Language.RU], ['Тоҷикӣ', Language.TJ], ['English', Language.EN]] as const).map(([label, lang]) => (
               <button key={lang} onClick={() => { setLanguage(lang); setScreen('welcome'); }} className="h-14 rounded-2xl bg-white border border-[#E2E8F0] font-bold text-center px-4 shadow-sm active:scale-[0.98] transition-all">
                 {label}
               </button>

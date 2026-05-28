@@ -2,6 +2,8 @@ using Hamroh.Api.BackgroundServices;
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
 using Hamroh.Api.Domain;
+using Hamroh.Api.Features.Bookings.Commands;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hamroh.Api.Features.Bookings;
@@ -85,91 +87,18 @@ public static class BookingEndpoints
         return Results.Ok(ApiResponse<BookingDetails>.Ok(item));
     }
 
-    private static async Task<IResult> CreateBooking(CreateBookingRequest request, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
+    private static async Task<IResult> CreateBooking(CreateBookingRequest request, IMediator mediator, ICurrentUser currentUser, CancellationToken ct)
     {
-        var hasPenalty = await db.Penalties.AnyAsync(x => x.PassengerId == currentUser.UserId && !x.IsPaid, ct);
-        if (hasPenalty)
-        {
-            return Results.BadRequest(ApiResponse<object>.Fail("Unpaid no-show penalty blocks booking"));
-        }
-
-        var trip = await db.Trips.AsNoTracking().SingleOrDefaultAsync(x => x.Id == request.TripId, ct);
-        if (trip is null || trip.Status != TripStatus.Published || trip.AvailableSeats < request.SeatsCount)
-        {
-            return Results.BadRequest(ApiResponse<object>.Fail("Trip is unavailable"));
-        }
-
-        var booking = new Booking
-        {
-            TripId = request.TripId,
-            PassengerId = currentUser.UserId,
-            SeatsCount = request.SeatsCount,
-            TotalPrice = request.SeatsCount * trip.PricePerSeat,
-            PassengerMessage = request.PassengerMessage,
-            Status = BookingStatus.Pending
-        };
-
-        db.Bookings.Add(booking);
-        await db.SaveChangesAsync(ct);
-        
-        await queue.EnqueueAsync(new NotificationMessage(
-            trip.DriverId,
-            "New booking request",
-            "Passenger requested seats for your trip.",
-            "booking_request",
-            booking.Id,
-            trip.Id
-        ), ct);
-        
-        return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
+        var command = new CreateBookingCommand(request.TripId, request.SeatsCount, request.PassengerMessage, currentUser.UserId);
+        var result = await mediator.Send(command, ct);
+        return result.ToHttpResult();
     }
 
-    private static async Task<IResult> AcceptBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, StackExchange.Redis.IConnectionMultiplexer redis, CancellationToken ct)
+    private static async Task<IResult> AcceptBooking(Guid bookingId, IMediator mediator, ICurrentUser currentUser, CancellationToken ct)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
-
-        var booking = await db.Bookings
-            .Include(x => x.Trip)
-            .SingleOrDefaultAsync(x => x.Id == bookingId, ct);
-
-        if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
-        if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
-        if (booking.Status != BookingStatus.Pending) return Results.BadRequest(ApiResponse<object>.Fail("Booking is not pending"));
-
-        var lockedTrip = await db.Trips
-            .FromSqlInterpolated($"SELECT * FROM \"Trips\" WHERE \"Id\" = {booking.TripId} FOR UPDATE")
-            .SingleAsync(ct);
-
-        if (lockedTrip.AvailableSeats < booking.SeatsCount)
-        {
-            return Results.Conflict(ApiResponse<object>.Fail("Not enough seats available"));
-        }
-
-        lockedTrip.AvailableSeats -= booking.SeatsCount;
-        lockedTrip.Status = lockedTrip.AvailableSeats == 0 ? TripStatus.Full : TripStatus.Accepted;
-        booking.Status = BookingStatus.Accepted;
-
-        await db.SaveChangesAsync(ct);
-        await audit.WriteAsync(currentUser.UserId, "BookingAccepted", nameof(Booking), booking.Id, ct);
-        await tx.CommitAsync(ct);
-
-        await queue.EnqueueAsync(new NotificationMessage(
-            booking.PassengerId,
-            "Booking accepted",
-            "Phone, chat and car plate are now available.",
-            "booking_accepted",
-            booking.Id,
-            booking.TripId
-        ), ct);
-
-        // Redis cache invalidation for the trip's search results
-        var cache = redis.GetDatabase();
-        // Since we don't know the exact cached page keys, we might need to rely on the 30s TTL, 
-        // OR implement a tag-based cache. For now, we accept the TTL delay, but let's clear the specific trip's detail cache if any.
-        // Wait, there's no detail cache. We can't easily clear all "trips:*" keys in Redis via StringGetAsync without Keys() which is slow.
-        // We will leave the TTL as is, but this is the right place to clear tags if using Redis Cache Tags.
-
-        return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
+        var command = new AcceptBookingCommand(bookingId, currentUser.UserId);
+        var result = await mediator.Send(command, ct);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> RejectBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)

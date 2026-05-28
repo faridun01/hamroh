@@ -1,3 +1,4 @@
+using Hamroh.Api.BackgroundServices;
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
 using Hamroh.Api.Domain;
@@ -50,27 +51,27 @@ public static class AdminEndpoints
         return Results.Ok(ApiResponse<PageResult<PendingDriverItem>>.Ok(new PageResult<PendingDriverItem>(items, page, pageSize, total)));
     }
 
-    private static Task<IResult> ApproveDriver(Guid driverUserId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static Task<IResult> ApproveDriver(Guid driverUserId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
     {
-        return SetDriverStatus(driverUserId, VerificationStatus.Verified, "", db, currentUser, audit, ct);
+        return SetDriverStatus(driverUserId, VerificationStatus.Verified, "", db, currentUser, audit, queue, ct);
     }
 
-    private static Task<IResult> RejectDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static Task<IResult> RejectDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
     {
-        return SetDriverStatus(driverUserId, VerificationStatus.Rejected, request.Reason, db, currentUser, audit, ct);
+        return SetDriverStatus(driverUserId, VerificationStatus.Rejected, request.Reason, db, currentUser, audit, queue, ct);
     }
 
-    private static Task<IResult> SuspendDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static Task<IResult> SuspendDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
     {
-        return SetDriverStatus(driverUserId, VerificationStatus.Suspended, request.Reason, db, currentUser, audit, ct);
+        return SetDriverStatus(driverUserId, VerificationStatus.Suspended, request.Reason, db, currentUser, audit, queue, ct);
     }
 
-    private static Task<IResult> BanDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static Task<IResult> BanDriver(Guid driverUserId, ModerationReasonRequest request, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
     {
-        return SetDriverStatus(driverUserId, VerificationStatus.Banned, request.Reason, db, currentUser, audit, ct);
+        return SetDriverStatus(driverUserId, VerificationStatus.Banned, request.Reason, db, currentUser, audit, queue, ct);
     }
 
-    private static async Task<IResult> SetDriverStatus(Guid driverUserId, VerificationStatus status, string reason, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static async Task<IResult> SetDriverStatus(Guid driverUserId, VerificationStatus status, string reason, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
     {
         var profile = await db.DriverProfiles.SingleOrDefaultAsync(x => x.UserId == driverUserId, ct);
         if (profile is null)
@@ -80,16 +81,19 @@ public static class AdminEndpoints
 
         profile.VerificationStatus = status;
         profile.VerificationReason = reason.Trim();
-        db.Notifications.Add(new Notification
-        {
-            UserId = driverUserId,
-            Title = "Driver verification updated",
-            Message = status == VerificationStatus.Verified ? "Your driver profile is verified." : profile.VerificationReason,
-            Type = "driver_verification_status"
-        });
-
+        
         await db.SaveChangesAsync(ct);
         await audit.WriteAsync(currentUser.UserId, $"Driver{status}", nameof(DriverProfile), profile.Id, ct);
+        
+        await queue.EnqueueAsync(new NotificationMessage(
+            driverUserId,
+            "Driver verification updated",
+            status == VerificationStatus.Verified ? "Your driver profile is verified." : profile.VerificationReason,
+            "driver_verification_status",
+            null,
+            null
+        ), ct);
+
         return Results.Ok(ApiResponse<object>.Ok(new { profile.UserId, profile.VerificationStatus }));
     }
 
