@@ -1,6 +1,8 @@
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
 using Hamroh.Api.Domain;
+using Hamroh.Api.Features.Trips.Queries;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -19,38 +21,11 @@ public static class TripsEndpoints
         return group;
     }
 
-    private static async Task<IResult> GetTrip(Guid tripId, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> GetTrip(Guid tripId, IMediator mediator, CancellationToken ct)
     {
-        var item = await db.Trips
-            .AsNoTracking()
-            .Where(x => x.Id == tripId)
-            .Select(x => new TripDetailsItem(
-                x.Id,
-                x.FromCity,
-                x.ToCity,
-                x.DepartureDate,
-                x.DepartureTime,
-                x.PickupPoint,
-                x.PickupLatitude,
-                x.PickupLongitude,
-                x.DropoffPoint,
-                x.DropoffLatitude,
-                x.DropoffLongitude,
-                x.PricePerSeat,
-                x.AvailableSeats,
-                x.TotalSeats,
-                x.Status,
-                x.DriverId,
-                x.Driver.FirstName + " " + x.Driver.LastName,
-                x.Vehicle.Brand + " " + x.Vehicle.Model,
-                x.AllowBaggage,
-                x.WomenFriendly,
-                x.DriverComment))
-            .SingleOrDefaultAsync(ct);
-
-        return item is null
-            ? Results.NotFound(ApiResponse<object>.Fail("Trip not found"))
-            : Results.Ok(ApiResponse<TripDetailsItem>.Ok(item));
+        var query = new GetTripQuery(tripId);
+        var result = await mediator.Send(query, ct);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> SearchTrips(
@@ -59,51 +34,12 @@ public static class TripsEndpoints
         DateOnly departureDate,
         int page,
         int pageSize,
-        AppDbContext db,
-        IConnectionMultiplexer redis,
+        IMediator mediator,
         CancellationToken ct)
     {
-        page = Math.Max(page, 1);
-        pageSize = Math.Clamp(pageSize, 1, 50);
-        var cacheKey = $"trips:{fromCity}:{toCity}:{departureDate}:{page}:{pageSize}";
-        var cache = redis.GetDatabase();
-        var cached = await cache.StringGetAsync(cacheKey);
-        if (cached.HasValue)
-        {
-            return Results.Ok(JsonSerializer.Deserialize<ApiResponse<PageResult<TripSearchItem>>>(cached!));
-        }
-
-        var query = db.Trips
-            .AsNoTracking()
-            .Where(x => x.FromCity == fromCity
-                && x.ToCity == toCity
-                && x.DepartureDate == departureDate
-                && x.AvailableSeats > 0
-                && x.Status == TripStatus.Published);
-
-        var total = await query.CountAsync(ct);
-        var items = await query
-            .OrderBy(x => x.DepartureTime)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(x => new TripSearchItem(
-                x.Id,
-                x.FromCity,
-                x.ToCity,
-                x.DepartureDate,
-                x.DepartureTime,
-                x.PricePerSeat,
-                x.AvailableSeats,
-                x.DriverId,
-                x.Driver.FirstName + " " + x.Driver.LastName,
-                x.Vehicle.Brand + " " + x.Vehicle.Model,
-                x.AllowBaggage,
-                x.WomenFriendly))
-            .ToListAsync(ct);
-
-        var response = ApiResponse<PageResult<TripSearchItem>>.Ok(new PageResult<TripSearchItem>(items, page, pageSize, total));
-        await cache.StringSetAsync(cacheKey, JsonSerializer.Serialize(response), TimeSpan.FromSeconds(30));
-        return Results.Ok(response);
+        var query = new SearchTripsQuery(fromCity, toCity, departureDate, page, pageSize);
+        var result = await mediator.Send(query, ct);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> CreateTrip(CreateTripRequest request, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)

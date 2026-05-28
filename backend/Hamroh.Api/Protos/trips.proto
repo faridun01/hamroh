@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+option csharp_namespace = "Hamroh.Api.Features.Trips.Grpc";
+
+package trips;
+
+service TripsGrpc {
+  rpc SearchTrips (SearchTripsRequest) returns (SearchTripsResponse);
+  rpc GetTrip (GetTripRequest) returns (GetTripResponse);
+}
+
+message SearchTripsRequest {
+  string from_city = 1;
+  string to_city = 2;
+  string departure_date = 3; // format: YYYY-MM-DD
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message TripSearchItemProto {
+  string id = 1;
+  string from_city = 2;
+  string to_city = 3;
+  string departure_date = 4;
+  string departure_time = 5;
+  double price_per_seat = 6;
+  int32 available_seats = 7;
+  string driver_id = 8;
+  string driver_name = 9;
+  string vehicle = 10;
+  bool allow_baggage = 11;
+  bool women_friendly = 12;
+}
+
+message SearchTripsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TripSearchItemProto items = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+  int32 total_count = 6;
+}
+
+message GetTripRequest {
+  string trip_id = 1;
+}
+
+message GetTripResponse {
+  bool success = 1;
+  string message = 2;
+  TripDetailsProto trip = 3;
+}
+
+message TripDetailsProto {
+  string id = 1;
+  string from_city = 2;
+  string to_city = 3;
+  string departure_date = 4;
+  string departure_time = 5;
+  string pickup_point = 6;
+  double pickup_latitude = 7;
+  double pickup_longitude = 8;
+  string dropoff_point = 9;
+  double dropoff_latitude = 10;
+  double dropoff_longitude = 11;
+  double price_per_seat = 12;
+  int32 available_seats = 13;
+  int32 total_seats = 14;
+  int32 status = 15;
+  string driver_id = 16;
+  string driver_name = 17;
+  string vehicle = 18;
+  bool allow_baggage = 19;
+  bool women_friendly = 20;
+  string driver_comment = 21;
+}

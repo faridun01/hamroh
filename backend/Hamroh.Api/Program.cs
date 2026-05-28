@@ -46,6 +46,7 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PasswordHasher>();
 builder.Services.AddScoped<AuditLogger>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddGrpc();
 
 builder.Services.AddCors(options =>
 {
@@ -73,6 +74,16 @@ builder.Services.AddRateLimiter(options =>
             PermitLimit = 30,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
+        }));
+    options.AddPolicy("token_bucket", httpContext => RateLimitPartition.GetTokenBucketLimiter(
+        httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 20,
+            QueueLimit = 0,
+            ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+            TokensPerPeriod = 5,
+            AutoReplenishment = true
         }));
 });
 
@@ -154,5 +165,6 @@ v1.MapPenaltyEndpoints();
 v1.MapAdminEndpoints();
 
 app.MapHub<ChatHub>("/chat-hub");
+app.MapGrpcService<TripGrpcService>();
 
 app.Run();
