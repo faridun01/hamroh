@@ -23,7 +23,7 @@ public static class TripsEndpoints
     {
         var item = await db.Trips
             .AsNoTracking()
-            .Where(x => x.Id == tripId && !x.IsDeleted)
+            .Where(x => x.Id == tripId)
             .Select(x => new TripDetailsItem(
                 x.Id,
                 x.FromCity,
@@ -75,8 +75,7 @@ public static class TripsEndpoints
 
         var query = db.Trips
             .AsNoTracking()
-            .Where(x => !x.IsDeleted
-                && x.FromCity == fromCity
+            .Where(x => x.FromCity == fromCity
                 && x.ToCity == toCity
                 && x.DepartureDate == departureDate
                 && x.AvailableSeats > 0

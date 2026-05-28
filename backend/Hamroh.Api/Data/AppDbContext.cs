@@ -21,15 +21,33 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<City> Cities => Set<City>();
     public DbSet<Domain.Route> Routes => Set<Domain.Route>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<DriverProfile>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<PassengerProfile>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Vehicle>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Trip>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Booking>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<PassengerRequest>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Review>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Complaint>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<City>().HasQueryFilter(x => !x.IsDeleted);
+        modelBuilder.Entity<Domain.Route>().HasQueryFilter(x => !x.IsDeleted);
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasIndex(x => x.Phone).IsUnique();
             entity.HasIndex(x => x.Role);
             entity.Property(x => x.Phone).HasMaxLength(32);
             entity.Property(x => x.PasswordHash).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<UserRefreshToken>(entity =>
+        {
+            entity.HasIndex(x => x.Token).IsUnique();
+            entity.HasIndex(x => x.UserId);
         });
 
         modelBuilder.Entity<Trip>(entity =>

@@ -14,6 +14,7 @@ using Hamroh.Api.Features.Penalties;
 using Hamroh.Api.Features.Reviews;
 using Hamroh.Api.Features.Trips;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -108,6 +109,10 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString)
     .AddRedis(redisConnection);
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<Hamroh.Api.BackgroundServices.NotificationQueue>();
+builder.Services.AddHostedService<Hamroh.Api.BackgroundServices.NotificationWorker>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ApiExceptionMiddleware>();
@@ -123,6 +128,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseCors("mobile");
 app.UseRateLimiter();
 app.UseAuthentication();
@@ -141,5 +151,7 @@ v1.MapComplaintEndpoints();
 v1.MapNotificationEndpoints();
 v1.MapPenaltyEndpoints();
 v1.MapAdminEndpoints();
+
+app.MapHub<ChatHub>("/chat-hub");
 
 app.Run();

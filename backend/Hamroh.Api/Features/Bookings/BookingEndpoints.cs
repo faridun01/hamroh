@@ -1,3 +1,4 @@
+using Hamroh.Api.BackgroundServices;
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
 using Hamroh.Api.Domain;
@@ -29,7 +30,7 @@ public static class BookingEndpoints
 
         var query = db.Bookings.AsNoTracking()
             .Include(x => x.Trip)
-            .Where(x => !x.IsDeleted && (x.PassengerId == currentUser.UserId || x.Trip.DriverId == currentUser.UserId))
+            .Where(x => x.PassengerId == currentUser.UserId || x.Trip.DriverId == currentUser.UserId)
             .OrderByDescending(x => x.CreatedAt);
 
         var total = await query.CountAsync(ct);
@@ -84,7 +85,7 @@ public static class BookingEndpoints
         return Results.Ok(ApiResponse<BookingDetails>.Ok(item));
     }
 
-    private static async Task<IResult> CreateBooking(CreateBookingRequest request, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    private static async Task<IResult> CreateBooking(CreateBookingRequest request, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
         var hasPenalty = await db.Penalties.AnyAsync(x => x.PassengerId == currentUser.UserId && !x.IsPaid, ct);
         if (hasPenalty)
@@ -109,20 +110,21 @@ public static class BookingEndpoints
         };
 
         db.Bookings.Add(booking);
-        db.Notifications.Add(new Notification
-        {
-            UserId = trip.DriverId,
-            Title = "New booking request",
-            Message = "Passenger requested seats for your trip.",
-            Type = "booking_request",
-            BookingId = booking.Id,
-            TripId = trip.Id
-        });
         await db.SaveChangesAsync(ct);
+        
+        await queue.EnqueueAsync(new NotificationMessage(
+            trip.DriverId,
+            "New booking request",
+            "Passenger requested seats for your trip.",
+            "booking_request",
+            booking.Id,
+            trip.Id
+        ), ct);
+        
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
-    private static async Task<IResult> AcceptBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, CancellationToken ct)
+    private static async Task<IResult> AcceptBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, StackExchange.Redis.IConnectionMultiplexer redis, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
@@ -147,39 +149,47 @@ public static class BookingEndpoints
         lockedTrip.Status = lockedTrip.AvailableSeats == 0 ? TripStatus.Full : TripStatus.Accepted;
         booking.Status = BookingStatus.Accepted;
 
-        db.Notifications.Add(new Notification
-        {
-            UserId = booking.PassengerId,
-            Title = "Booking accepted",
-            Message = "Phone, chat and car plate are now available.",
-            Type = "booking_accepted",
-            BookingId = booking.Id,
-            TripId = booking.TripId
-        });
-
         await db.SaveChangesAsync(ct);
         await audit.WriteAsync(currentUser.UserId, "BookingAccepted", nameof(Booking), booking.Id, ct);
         await tx.CommitAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.PassengerId,
+            "Booking accepted",
+            "Phone, chat and car plate are now available.",
+            "booking_accepted",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
+        // Redis cache invalidation for the trip's search results
+        var cache = redis.GetDatabase();
+        // Since we don't know the exact cached page keys, we might need to rely on the 30s TTL, 
+        // OR implement a tag-based cache. For now, we accept the TTL delay, but let's clear the specific trip's detail cache if any.
+        // Wait, there's no detail cache. We can't easily clear all "trips:*" keys in Redis via StringGetAsync without Keys() which is slow.
+        // We will leave the TTL as is, but this is the right place to clear tags if using Redis Cache Tags.
+
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
-    private static async Task<IResult> RejectBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    private static async Task<IResult> RejectBooking(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
         var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
         if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
         if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
 
         booking.Status = BookingStatus.Rejected;
-        db.Notifications.Add(new Notification
-        {
-            UserId = booking.PassengerId,
-            Title = "Booking rejected",
-            Message = "The driver rejected your booking request.",
-            Type = "booking_rejected",
-            BookingId = booking.Id,
-            TripId = booking.TripId
-        });
         await db.SaveChangesAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.PassengerId,
+            "Booking rejected",
+            "The driver rejected your booking request.",
+            "booking_rejected",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
@@ -197,27 +207,28 @@ public static class BookingEndpoints
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
-    private static async Task<IResult> CancelByDriver(Guid bookingId, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    private static async Task<IResult> CancelByDriver(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
         var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
         if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
         if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
 
         booking.Status = BookingStatus.CancelledByDriver;
-        db.Notifications.Add(new Notification
-        {
-            UserId = booking.PassengerId,
-            Title = "Booking cancelled",
-            Message = "The driver cancelled this booking.",
-            Type = "booking_cancelled_by_driver",
-            BookingId = booking.Id,
-            TripId = booking.TripId
-        });
         await db.SaveChangesAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.PassengerId,
+            "Booking cancelled",
+            "The driver cancelled this booking.",
+            "booking_cancelled_by_driver",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
-    private static async Task<IResult> MarkPassengerNoShow(Guid bookingId, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    private static async Task<IResult> MarkPassengerNoShow(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
@@ -237,18 +248,18 @@ public static class BookingEndpoints
             IsPaid = false
         };
         db.Penalties.Add(penalty);
-        db.Notifications.Add(new Notification
-        {
-            UserId = booking.PassengerId,
-            Title = "No-show penalty",
-            Message = "Pay 30% of the previous trip amount before booking again.",
-            Type = "no_show_penalty",
-            BookingId = booking.Id,
-            TripId = booking.TripId
-        });
-
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.PassengerId,
+            "No-show penalty",
+            "Pay 30% of the previous trip amount before booking again.",
+            "no_show_penalty",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status, penalty.Amount }));
     }
 

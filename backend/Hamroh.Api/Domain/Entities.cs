@@ -217,3 +217,12 @@ public sealed class AuditLog
     public Guid? EntityId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
+
+public sealed class UserRefreshToken : Entity
+{
+    public Guid UserId { get; set; }
+    public User User { get; set; } = null!;
+    public string Token { get; set; } = "";
+    public DateTime ExpiresAt { get; set; }
+    public bool IsRevoked { get; set; }
+}

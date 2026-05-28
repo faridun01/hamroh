@@ -1,6 +1,8 @@
+using Hamroh.Api.BackgroundServices;
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
 using Hamroh.Api.Domain;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hamroh.Api.Features.Chat;
@@ -37,7 +39,14 @@ public static class ChatEndpoints
         return Results.Ok(ApiResponse<IReadOnlyList<ChatMessageItem>>.Ok(messages));
     }
 
-    private static async Task<IResult> SendMessage(Guid bookingId, SendChatMessageRequest request, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    private static async Task<IResult> SendMessage(
+        Guid bookingId, 
+        SendChatMessageRequest request, 
+        AppDbContext db, 
+        ICurrentUser currentUser, 
+        IHubContext<ChatHub> hubContext,
+        NotificationQueue queue,
+        CancellationToken ct)
     {
         var booking = await LoadBookingForParticipant(bookingId, db, currentUser.UserId, ct);
         if (booking is null)
@@ -62,19 +71,24 @@ public static class ChatEndpoints
             Body = request.Body.Trim()
         };
 
-        var receiverId = booking.PassengerId == currentUser.UserId ? booking.Trip.DriverId : booking.PassengerId;
         db.ChatMessages.Add(message);
-        db.Notifications.Add(new Notification
-        {
-            UserId = receiverId,
-            Title = "New message",
-            Message = "You have a new message in Hamroh.",
-            Type = "new_message",
-            BookingId = booking.Id,
-            TripId = booking.TripId
-        });
-
         await db.SaveChangesAsync(ct);
+
+        var receiverId = booking.PassengerId == currentUser.UserId ? booking.Trip.DriverId : booking.PassengerId;
+        
+        // Broadcast via SignalR
+        await hubContext.Clients.Group($"booking_{bookingId}").SendAsync("ReceiveMessage", new ChatMessageItem(message.Id, message.SenderId, message.Body, message.CreatedAt, message.IsArchived), ct);
+
+        // Queue Push Notification
+        await queue.EnqueueAsync(new NotificationMessage(
+            receiverId,
+            "New message",
+            "You have a new message in Hamroh.",
+            "new_message",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
         return Results.Ok(ApiResponse<object>.Ok(new { message.Id }));
     }
 
