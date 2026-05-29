@@ -277,9 +277,11 @@ export default function PhoneSimulator({
   const [bookingMessage, setBookingMessage] = useState('');
   const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [toast, setToast] = useState('');
+  const [topNotification, setTopNotification] = useState<Notification | null>(null);
   const [hiddenNotificationIds, setHiddenNotificationIds] = useState<string[]>([]);
   const [hiddenChatUserIds, setHiddenChatUserIds] = useState<string[]>([]);
   const chatInputRef = useRef<HTMLInputElement | null>(null);
+  const knownNotificationIdsRef = useRef<Set<string>>(new Set());
 
   const [authPhone, setAuthPhone] = useState('+992');
   const [authPassword, setAuthPassword] = useState('');
@@ -395,6 +397,41 @@ export default function PhoneSimulator({
     setToast(message);
     window.setTimeout(() => setToast(''), 2400);
   };
+
+  const formatDateTime = (value: string) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+
+    const locale = language === Language.EN ? 'en-US' : 'ru-RU';
+    return new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(parsed);
+  };
+
+  useEffect(() => {
+    if (!currentUser) {
+      setTopNotification(null);
+      knownNotificationIdsRef.current = new Set(notifications.map(notification => notification.id));
+      return;
+    }
+
+    const visibleNotifications = notifications.filter(notification =>
+      notification.userId === currentUser.id && !hiddenNotificationIds.includes(notification.id)
+    );
+    const nextIds = new Set(visibleNotifications.map(notification => notification.id));
+    const newNotifications = visibleNotifications
+      .filter(notification => !knownNotificationIdsRef.current.has(notification.id))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (newNotifications[0]) setTopNotification(newNotifications[0]);
+    if (topNotification && !nextIds.has(topNotification.id)) setTopNotification(null);
+
+    knownNotificationIdsRef.current = nextIds;
+  }, [currentUser, hiddenNotificationIds, notifications, topNotification]);
 
   const setPointFromLocation = (kind: 'tripPickup' | 'tripDropoff' | 'requestPickup' | 'requestDropoff') => {
     if (kind === 'tripPickup') {
@@ -2521,7 +2558,34 @@ export default function PhoneSimulator({
           <span>5G 98%</span>
         </div>
         <div className="absolute inset-0 top-8 bg-white flex flex-col overflow-hidden safe-phone-screen">
-          {toast && <div className="absolute top-3 left-4 right-4 z-50 rounded-2xl bg-[#0F172A] text-white p-3 text-xs font-bold shadow-xl">{toast}</div>}
+          {topNotification && (
+            <div className="absolute top-3 left-4 right-4 z-50 rounded-2xl bg-[#0F172A] text-white p-3 shadow-xl">
+              <button
+                onClick={() => {
+                  openNotification(topNotification);
+                  setTopNotification(null);
+                }}
+                className="w-full text-left"
+              >
+                <div className="flex items-start gap-2">
+                  <Bell className="w-4 h-4 mt-0.5 shrink-0 text-[#34D399]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-black leading-tight truncate">{topNotification.title}</p>
+                    <p className="text-[11px] font-bold text-slate-200 mt-1 leading-snug line-clamp-2">{topNotification.message}</p>
+                    <p className="text-[10px] font-bold text-slate-400 mt-2">{formatDateTime(topNotification.createdAt)}</p>
+                  </div>
+                </div>
+              </button>
+              <button
+                onClick={() => setTopNotification(null)}
+                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/10 text-[11px] font-black"
+                aria-label="Закрыть уведомление"
+              >
+                x
+              </button>
+            </div>
+          )}
+          {toast && <div className={`absolute ${topNotification ? 'top-28' : 'top-3'} left-4 right-4 z-50 rounded-2xl bg-[#0F172A] text-white p-3 text-xs font-bold shadow-xl`}>{toast}</div>}
           {content}
         </div>
         <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-neutral-600 rounded-full z-50" />
