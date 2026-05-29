@@ -1521,7 +1521,7 @@ export default function PhoneSimulator({
           <h2 className="text-xl font-black">Поездки</h2>
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
             <button onClick={() => setView('active')} className={`h-11 rounded-xl text-sm font-black transition-all ${view === 'active' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#64748B]'}`}>
-              Актуальные
+              Актуальная
             </button>
             <button onClick={() => setView('completed')} className={`h-11 rounded-xl text-sm font-black transition-all ${view === 'completed' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#64748B]'}`}>
               Завершённые
@@ -1964,7 +1964,7 @@ export default function PhoneSimulator({
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
-                <button onClick={() => setDriverHomeView('trips')} className={`h-11 rounded-xl text-xs font-black ${driverHomeView === 'trips' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Актуальные поездки</button>
+                <button onClick={() => setDriverHomeView('trips')} className={`h-11 rounded-xl text-xs font-black ${driverHomeView === 'trips' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Актуальная поездки</button>
                 <button onClick={() => setDriverHomeView('requests')} className={`h-11 rounded-xl text-xs font-black ${driverHomeView === 'requests' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Заявки пассажиров</button>
               </div>
               {driverHomeView === 'trips' && <div className="space-y-3">
