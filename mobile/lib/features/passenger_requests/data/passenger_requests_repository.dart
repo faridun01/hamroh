@@ -52,6 +52,10 @@ class PassengerRequestsRepository {
       'suggestedPrice': suggestedPrice,
     });
   }
+
+  Future<void> confirmDriver(String requestId) async {
+    await _dio.post('/passenger-requests/$requestId/confirm-driver');
+  }
 }
 
 class PassengerRequestItem {

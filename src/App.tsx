@@ -304,7 +304,7 @@ export default function App() {
       </header>
 
       {/* Main Multi-Column Split Portal Layout */}
-      <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
+      <main className="grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
         
         {/* LEFT COLUMN: INTERACTIVE PHYSICAL SIMULATOR PORT (Spans 4 columns) */}
         <div className="lg:col-span-5 flex flex-col items-center">
@@ -326,7 +326,7 @@ export default function App() {
         </div>
 
         {/* RIGHT COLUMN: WORKSPACE PANELS & TABS (Spans 7 columns) */}
-        <div className="lg:col-span-7 flex flex-col h-[720px] bg-slate-950/20 rounded-2xl border border-slate-800 overflow-hidden">
+        <div className="lg:col-span-7 flex flex-col h-180 bg-slate-950/20 rounded-2xl border border-slate-800 overflow-hidden">
           
           {/* Header Switch Toggles */}
           <div className="flex border-b border-slate-800 bg-slate-900/50 p-2 justify-between items-center shrink-0">

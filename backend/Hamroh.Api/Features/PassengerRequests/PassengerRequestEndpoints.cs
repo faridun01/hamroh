@@ -83,8 +83,7 @@ public static class PassengerRequestEndpoints
 
         var total = await query.CountAsync(ct);
         var items = await query
-            .OrderBy(x => x.DepartureDate)
-            .ThenBy(x => x.DepartureTime)
+            .OrderByDescending(x => x.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new PassengerRequestItem(
@@ -155,13 +154,35 @@ public static class PassengerRequestEndpoints
             return Results.Forbid();
         }
 
+        var trip = await db.Trips.SingleOrDefaultAsync(x =>
+            x.Id == request.TripId &&
+            x.DriverId == currentUser.UserId &&
+            (x.Status == TripStatus.Published || x.Status == TripStatus.Accepted) &&
+            x.AvailableSeats > 0, ct);
+
+        if (trip is null)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Choose an active trip before offering a ride"));
+        }
+
         var passengerRequest = await db.PassengerRequests.SingleOrDefaultAsync(x => x.Id == requestId && x.Status == "Open", ct);
         if (passengerRequest is null)
         {
             return Results.NotFound(ApiResponse<object>.Fail("Passenger request not found"));
         }
 
+        if (trip.FromCity != passengerRequest.FromCity || trip.ToCity != passengerRequest.ToCity)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Trip route does not match passenger request"));
+        }
+
+        if (trip.AvailableSeats < passengerRequest.SeatsCount)
+        {
+            return Results.Conflict(ApiResponse<object>.Fail("Not enough available seats"));
+        }
+
         passengerRequest.AcceptedByDriverId = currentUser.UserId;
+        passengerRequest.OfferedTripId = trip.Id;
         passengerRequest.Status = "DriverOffered";
 
         db.Notifications.Add(new Notification
@@ -170,7 +191,7 @@ public static class PassengerRequestEndpoints
             Title = "Driver offered a ride",
             Message = "Confirm the driver to accept this booking.",
             Type = "passenger_request_driver_offer",
-            TripId = request.TripId
+            TripId = trip.Id
         });
 
         await db.SaveChangesAsync(ct);
@@ -185,7 +206,8 @@ public static class PassengerRequestEndpoints
             x.Id == requestId &&
             x.PassengerId == currentUser.UserId &&
             x.Status == "DriverOffered" &&
-            x.AcceptedByDriverId != null, ct);
+            x.AcceptedByDriverId != null &&
+            x.OfferedTripId != null, ct);
 
         if (passengerRequest is null)
         {
@@ -193,10 +215,13 @@ public static class PassengerRequestEndpoints
         }
 
         var trip = await db.Trips
-            .FromSqlInterpolated($"SELECT * FROM \"Trips\" WHERE \"DriverId\" = {passengerRequest.AcceptedByDriverId!.Value} AND \"Status\" IN ({TripStatus.Published}, {TripStatus.Accepted}) ORDER BY \"DepartureDate\", \"DepartureTime\" LIMIT 1 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM \"Trips\" WHERE \"Id\" = {passengerRequest.OfferedTripId!.Value} FOR UPDATE")
             .SingleOrDefaultAsync(ct);
 
-        if (trip is null || trip.AvailableSeats < passengerRequest.SeatsCount)
+        if (trip is null ||
+            trip.DriverId != passengerRequest.AcceptedByDriverId ||
+            (trip.Status != TripStatus.Published && trip.Status != TripStatus.Accepted) ||
+            trip.AvailableSeats < passengerRequest.SeatsCount)
         {
             return Results.Conflict(ApiResponse<object>.Fail("Driver does not have enough available seats"));
         }
@@ -235,6 +260,6 @@ public static class PassengerRequestEndpoints
 }
 
 public sealed record CreatePassengerRequest(string FromCity, string ToCity, string PickupAddress, double? PickupLatitude, double? PickupLongitude, string DropoffPoint, double? DropoffLatitude, double? DropoffLongitude, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, bool HasBaggage, Gender? PreferredDriverGender, string Comment, decimal SuggestedPrice);
-public sealed record DriverOfferRequest(Guid? TripId);
+public sealed record DriverOfferRequest(Guid TripId);
 public sealed record PassengerRequestItem(Guid Id, string FromCity, string ToCity, string PickupAddress, double? PickupLatitude, double? PickupLongitude, string DropoffPoint, double? DropoffLatitude, double? DropoffLongitude, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal SuggestedPrice, bool HasBaggage, string Comment, string PassengerName);
 public sealed record MyPassengerRequestItem(Guid Id, string FromCity, string ToCity, string PickupAddress, double? PickupLatitude, double? PickupLongitude, string DropoffPoint, double? DropoffLatitude, double? DropoffLongitude, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal SuggestedPrice, bool HasBaggage, string Comment, string Status, Guid? AcceptedByDriverId, Guid? BookingId, bool PassengerConfirmedDriver);

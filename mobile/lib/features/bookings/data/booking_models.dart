@@ -12,6 +12,8 @@ class BookingDetails {
     required this.carInfo,
     required this.contactsVisible,
     required this.chatAvailable,
+    this.passengerFinalConfirmedAt,
+    this.driverFinalConfirmedAt,
     this.plateNumber,
     this.driverPhone,
   });
@@ -30,6 +32,8 @@ class BookingDetails {
   final String? driverPhone;
   final bool contactsVisible;
   final bool chatAvailable;
+  final String? passengerFinalConfirmedAt;
+  final String? driverFinalConfirmedAt;
 
   factory BookingDetails.fromJson(Map<String, dynamic> json) {
     return BookingDetails(
@@ -47,6 +51,8 @@ class BookingDetails {
       driverPhone: json['driverPhone'] as String?,
       contactsVisible: json['contactsVisible'] as bool,
       chatAvailable: json['chatAvailable'] as bool,
+      passengerFinalConfirmedAt: json['passengerFinalConfirmedAt'] as String?,
+      driverFinalConfirmedAt: json['driverFinalConfirmedAt'] as String?,
     );
   }
 }

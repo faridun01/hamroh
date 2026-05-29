@@ -69,13 +69,13 @@ class MyBookingsScreen extends ConsumerWidget {
   }
 }
 
-class _PassengerRequestCard extends StatelessWidget {
+class _PassengerRequestCard extends ConsumerWidget {
   const _PassengerRequestCard({required this.request});
 
   final PassengerRequestItem request;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -105,7 +105,11 @@ class _PassengerRequestCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await ref.read(passengerRequestsRepositoryProvider).confirmDriver(request.id);
+                    ref.invalidate(myBookingsProvider);
+                    ref.invalidate(myPassengerRequestsProvider);
+                  },
                   child: const Text('Подтвердить водителя'),
                 ),
               ),

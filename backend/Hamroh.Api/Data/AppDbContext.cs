@@ -69,6 +69,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.HasIndex(x => new { x.FromCity, x.ToCity, x.DepartureDate });
             entity.HasIndex(x => x.PassengerId);
             entity.HasIndex(x => x.AcceptedByDriverId);
+            entity.HasIndex(x => x.OfferedTripId);
             entity.Property(x => x.SuggestedPrice).HasPrecision(12, 2);
         });
 

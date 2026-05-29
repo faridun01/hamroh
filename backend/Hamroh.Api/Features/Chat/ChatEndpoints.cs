@@ -32,7 +32,7 @@ public static class ChatEndpoints
 
         var messages = await db.ChatMessages.AsNoTracking()
             .Where(x => x.BookingId == bookingId)
-            .OrderBy(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt)
             .Select(x => new ChatMessageItem(x.Id, x.SenderId, x.Body, x.CreatedAt, x.IsArchived))
             .ToListAsync(ct);
 

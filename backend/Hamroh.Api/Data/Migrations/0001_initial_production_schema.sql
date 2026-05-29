@@ -98,7 +98,9 @@ CREATE TABLE IF NOT EXISTS "Bookings" (
     "SeatsCount" integer NOT NULL,
     "TotalPrice" numeric(12,2) NOT NULL,
     "Status" integer NOT NULL,
-    "PassengerMessage" text NOT NULL
+    "PassengerMessage" text NOT NULL,
+    "PassengerFinalConfirmedAt" timestamptz NULL,
+    "DriverFinalConfirmedAt" timestamptz NULL
 );
 
 CREATE TABLE IF NOT EXISTS "PassengerRequests" (
@@ -123,6 +125,7 @@ CREATE TABLE IF NOT EXISTS "PassengerRequests" (
     "HasBaggage" boolean NOT NULL DEFAULT false,
     "PreferredDriverGender" integer NULL,
     "AcceptedByDriverId" uuid NULL REFERENCES "Users"("Id"),
+    "OfferedTripId" uuid NULL REFERENCES "Trips"("Id"),
     "BookingId" uuid NULL REFERENCES "Bookings"("Id"),
     "PassengerConfirmedDriver" boolean NOT NULL DEFAULT false,
     "Status" text NOT NULL DEFAULT 'Open'
@@ -250,6 +253,7 @@ CREATE INDEX IF NOT EXISTS "IX_Bookings_PassengerId" ON "Bookings"("PassengerId"
 CREATE INDEX IF NOT EXISTS "IX_PassengerRequests_Search" ON "PassengerRequests"("FromCity", "ToCity", "DepartureDate");
 CREATE INDEX IF NOT EXISTS "IX_PassengerRequests_PassengerId" ON "PassengerRequests"("PassengerId");
 CREATE INDEX IF NOT EXISTS "IX_PassengerRequests_AcceptedByDriverId" ON "PassengerRequests"("AcceptedByDriverId");
+CREATE INDEX IF NOT EXISTS "IX_PassengerRequests_OfferedTripId" ON "PassengerRequests"("OfferedTripId");
 CREATE INDEX IF NOT EXISTS "IX_ChatMessages_Booking_CreatedAt" ON "ChatMessages"("BookingId", "CreatedAt");
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_Reviews_Booking_FromUser" ON "Reviews"("BookingId", "FromUserId");
 CREATE INDEX IF NOT EXISTS "IX_Notifications_User_Read_CreatedAt" ON "Notifications"("UserId", "IsRead", "CreatedAt");

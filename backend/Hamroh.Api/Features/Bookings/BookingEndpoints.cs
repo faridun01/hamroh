@@ -20,6 +20,8 @@ public static class BookingEndpoints
         bookings.MapPost("/{bookingId:guid}/reject", RejectBooking).RequireAuthorization("DriverOnly");
         bookings.MapPost("/{bookingId:guid}/cancel-by-passenger", CancelByPassenger).RequireAuthorization("PassengerOnly");
         bookings.MapPost("/{bookingId:guid}/cancel-by-driver", CancelByDriver).RequireAuthorization("DriverOnly");
+        bookings.MapPost("/{bookingId:guid}/confirm-by-passenger", ConfirmByPassenger).RequireAuthorization("PassengerOnly");
+        bookings.MapPost("/{bookingId:guid}/confirm-by-driver", ConfirmByDriver).RequireAuthorization("DriverOnly");
         bookings.MapPost("/{bookingId:guid}/no-show-passenger", MarkPassengerNoShow).RequireAuthorization("DriverOnly");
         bookings.MapPost("/{bookingId:guid}/no-show-driver", MarkDriverNoShow).RequireAuthorization("PassengerOnly");
         return group;
@@ -82,7 +84,9 @@ public static class BookingEndpoints
             contactsVisible ? booking.Trip.Vehicle.PlateNumber : null,
             contactsVisible ? booking.Trip.Driver.Phone : null,
             contactsVisible,
-            booking.Status == BookingStatus.Accepted);
+            booking.Status == BookingStatus.Accepted,
+            booking.PassengerFinalConfirmedAt,
+            booking.DriverFinalConfirmedAt);
 
         return Results.Ok(ApiResponse<BookingDetails>.Ok(item));
     }
@@ -157,6 +161,55 @@ public static class BookingEndpoints
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
+    private static async Task<IResult> ConfirmByPassenger(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
+    {
+        var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId && x.PassengerId == currentUser.UserId, ct);
+        if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
+        if (booking.Status != BookingStatus.Accepted)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Only accepted bookings can be final-confirmed"));
+        }
+
+        booking.PassengerFinalConfirmedAt ??= DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.Trip.DriverId,
+            "Passenger final-confirmed",
+            "Passenger confirmed they are definitely going.",
+            "passenger_final_confirmed",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
+        return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.PassengerFinalConfirmedAt, booking.DriverFinalConfirmedAt }));
+    }
+
+    private static async Task<IResult> ConfirmByDriver(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
+    {
+        var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
+        if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
+        if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
+        if (booking.Status != BookingStatus.Accepted)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Only accepted bookings can be final-confirmed"));
+        }
+
+        booking.DriverFinalConfirmedAt ??= DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        await queue.EnqueueAsync(new NotificationMessage(
+            booking.PassengerId,
+            "Driver final-confirmed",
+            "Driver confirmed they are definitely going.",
+            "driver_final_confirmed",
+            booking.Id,
+            booking.TripId
+        ), ct);
+
+        return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.PassengerFinalConfirmedAt, booking.DriverFinalConfirmedAt }));
+    }
+
     private static async Task<IResult> MarkPassengerNoShow(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
@@ -217,4 +270,4 @@ public static class BookingEndpoints
 
 public sealed record CreateBookingRequest(Guid TripId, int SeatsCount, string PassengerMessage);
 public sealed record BookingListItem(Guid Id, Guid TripId, BookingStatus Status, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice);
-public sealed record BookingDetails(Guid Id, BookingStatus Status, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice, string DriverName, string CarInfo, string? PlateNumber, string? DriverPhone, bool ContactsVisible, bool ChatAvailable);
+public sealed record BookingDetails(Guid Id, BookingStatus Status, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice, string DriverName, string CarInfo, string? PlateNumber, string? DriverPhone, bool ContactsVisible, bool ChatAvailable, DateTime? PassengerFinalConfirmedAt, DateTime? DriverFinalConfirmedAt);

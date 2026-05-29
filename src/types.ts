@@ -177,6 +177,7 @@ export interface Booking {
   driverAcceptedAt?: string;
   cancellationDeadlineAt?: string;
   passengerFinalConfirmedAt?: string;
+  driverFinalConfirmedAt?: string;
 }
 
 export interface PassengerRequest {

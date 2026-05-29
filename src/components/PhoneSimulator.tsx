@@ -784,6 +784,27 @@ export default function PhoneSimulator({
     show('Вы подтвердили, что точно едете');
   };
 
+  const confirmDriverRide = (booking: Booking) => {
+    const trip = trips.find(item => item.id === booking.tripId);
+    if (!trip || trip.driverId !== currentUser?.id) return;
+    setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, driverFinalConfirmedAt: new Date().toISOString() } : item));
+    setNotifications(prev => [
+      {
+        id: `notif_${Date.now()}`,
+        userId: booking.passengerId,
+        title: 'Водитель подтвердил поездку',
+        message: 'Водитель подтвердил, что точно едет.',
+        type: 'driver_final_confirmed',
+        tripId: booking.tripId,
+        bookingId: booking.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      },
+      ...prev
+    ]);
+    show('Вы подтвердили, что точно едете');
+  };
+
   const rejectBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, status: BookingStatus.Rejected } : item));
@@ -928,12 +949,13 @@ export default function PhoneSimulator({
     setPassengerRequests(prev => [req, ...prev]);
     setScreen('passenger');
     setPassengerTab('trips');
+    setPassengerTripsView('active');
     show('Заявка от адреса опубликована');
   };
 
   const offerPassengerRequest = (request: PassengerRequest) => {
     if (!currentUser) return;
-    setPassengerRequests(prev => prev.map(item => item.id === request.id ? { ...item, acceptedByDriverId: currentUser.id, status: 'accepted' } : item));
+    setPassengerRequests(prev => prev.map(item => item.id === request.id ? { ...item, acceptedByDriverId: currentUser.id, status: 'pending' } : item));
     setNotifications(prev => [
       {
         id: `notif_${Date.now()}`,
@@ -947,6 +969,56 @@ export default function PhoneSimulator({
       ...prev
     ]);
     show('Пассажиру отправлено предложение. Бронь станет активной после его подтверждения.');
+  };
+
+  const confirmPassengerRequest = (request: PassengerRequest) => {
+    if (!currentUser || request.passengerId !== currentUser.id || !request.acceptedByDriverId) return;
+    const trip = trips.find(item =>
+      item.driverId === request.acceptedByDriverId &&
+      item.fromCity === request.fromCity &&
+      item.toCity === request.toCity &&
+      item.availableSeats >= request.seatsCount &&
+      ![TripStatus.Completed, TripStatus.Cancelled, TripStatus.BlockedByAdmin].includes(item.status)
+    );
+    if (!trip) return show('У водителя сейчас нет подходящей активной поездки');
+    const bookingId = `book_${Date.now()}`;
+    const booking: Booking = {
+      id: bookingId,
+      tripId: trip.id,
+      passengerId: currentUser.id,
+      seatsCount: request.seatsCount,
+      status: BookingStatus.Accepted,
+      totalPrice: request.seatsCount * displayPriceForTrip(trip),
+      passengerMessage: request.comment || '',
+      createdAt: new Date().toISOString(),
+      driverAcceptedAt: new Date().toISOString()
+    };
+    setBookings(prev => [booking, ...prev]);
+    setTrips(prev => prev.map(item => {
+      if (item.id !== trip.id) return item;
+      const left = Math.max(0, item.availableSeats - request.seatsCount);
+      return { ...item, availableSeats: left, status: left === 0 ? TripStatus.Full : TripStatus.Accepted };
+    }));
+    setPassengerRequests(prev => prev.map(item => item.id === request.id ? { ...item, status: 'accepted' } : item));
+    setNotifications(prev => [
+      {
+        id: `notif_${Date.now()}`,
+        userId: request.acceptedByDriverId!,
+        title: 'Пассажир подтвердил предложение',
+        message: 'Контакты и чат открыты. После обсуждения отметьте «Точно едем».',
+        type: 'passenger_request_confirmed',
+        tripId: trip.id,
+        bookingId,
+        chatUserId: currentUser.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      },
+      ...prev
+    ]);
+    setSelectedBookingId(bookingId);
+    setPassengerTab('trips');
+    setPassengerTripsView('active');
+    show('Предложение принято. Контакты и чат открыты.');
   };
 
   const openNotification = (notification: Notification) => {
@@ -974,6 +1046,12 @@ export default function PhoneSimulator({
     if (currentUser?.role === UserRole.Passenger && notification.type === 'booking_accepted') {
       setSelectedBookingId(notification.bookingId || '');
       setPassengerTab('trips');
+      setScreen('passenger');
+      return;
+    }
+    if (currentUser?.role === UserRole.Passenger && notification.type === 'driver_offer') {
+      setPassengerTab('trips');
+      setPassengerTripsView('active');
       setScreen('passenger');
       return;
     }
@@ -1042,12 +1120,12 @@ export default function PhoneSimulator({
     const height = compact ? 'h-[76px]' : 'h-[96px]';
     return (
       <div className={`relative ${width} ${height}`}>
-        <div className="absolute left-[10px] top-[8px] h-[72px] w-[25px] rounded-full bg-[#059669]" />
-        <div className="absolute right-[10px] top-[8px] h-[72px] w-[25px] rounded-full bg-[#059669]" />
-        <div className="absolute left-[35px] top-[47px] h-[19px] w-[40px] rounded-t-full bg-[#34D399]" />
-        <div className="absolute left-[39px] top-[53px] h-[18px] w-[32px] rounded-t-full bg-[#047857]" />
-        <div className="absolute left-1/2 top-[22px] h-[17px] w-[17px] -translate-x-1/2 rounded-full bg-[#3B82F6]" />
-        <div className="absolute left-[43px] top-[52px] h-[34px] w-[43px] rotate-45 rounded-[7px] bg-white shadow-[0_10px_18px_rgba(15,23,42,0.04)]" />
+        <div className="absolute left-2.5 top-2 h-18 w-6.25 rounded-full bg-[#059669]" />
+        <div className="absolute right-2.5 top-2 h-18 w-6.25 rounded-full bg-[#059669]" />
+        <div className="absolute left-8.75 top-11.75 h-4.75 w-10 rounded-t-full bg-[#34D399]" />
+        <div className="absolute left-9.75 top-13.25 h-4.5 w-8 rounded-t-full bg-[#047857]" />
+        <div className="absolute left-1/2 top-5.5 h-4.25 w-4.25 -translate-x-1/2 rounded-full bg-[#3B82F6]" />
+        <div className="absolute left-10.75 top-13 h-8.5 w-10.75 rotate-45 rounded-[7px] bg-white shadow-[0_10px_18px_rgba(15,23,42,0.04)]" />
       </div>
     );
   }, []);
@@ -1073,9 +1151,9 @@ export default function PhoneSimulator({
             <p className="text-sm font-black leading-none text-slate-400">{formatDuration(trip)}</p>
           </div>
           <div className="relative space-y-5">
-            <div className="absolute left-[-18px] top-2 h-[72px] border-l-2 border-dashed border-[#94A3B8]" />
-            <span className="absolute left-[-23px] top-1 w-3 h-3 rounded-full bg-[#047857]" />
-            <span className="absolute left-[-23px] top-[72px] w-3 h-3 rounded-full bg-[#94A3B8]" />
+            <div className="absolute -left-4.5 top-2 h-18 border-l-2 border-dashed border-[#94A3B8]" />
+            <span className="absolute -left-5.75 top-1 w-3 h-3 rounded-full bg-[#047857]" />
+            <span className="absolute -left-5.75 top-18 w-3 h-3 rounded-full bg-[#94A3B8]" />
             <div>
               <p className="text-base font-bold text-[#0F172A]">{trip.fromCity}, {trip.pickupPoint}</p>
               <p className="mt-2 text-sm font-black text-[#047857]">{formatDuration(trip)}</p>
@@ -1180,14 +1258,14 @@ export default function PhoneSimulator({
             </div>
             <div className="mt-16 text-center">
               <h1 className="text-[32px] leading-[1.14] font-black tracking-tight text-[#047857]">{t.welcomeTitle}</h1>
-              <p className="text-[#334155] mt-5 text-[17px] leading-7 max-w-[300px] mx-auto">{t.welcome}</p>
+              <p className="text-[#334155] mt-5 text-[17px] leading-7 max-w-75 mx-auto">{t.welcome}</p>
             </div>
             <div className="mt-auto space-y-4">
-              <button onClick={() => setScreen('login')} className="w-full h-[56px] rounded-[18px] bg-[#047857] text-white font-extrabold text-xl shadow-[0_12px_22px_rgba(4,120,87,0.18)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+              <button onClick={() => setScreen('login')} className="w-full h-14 rounded-[18px] bg-[#047857] text-white font-extrabold text-xl shadow-[0_12px_22px_rgba(4,120,87,0.18)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
                 {t.login}
                 <ChevronRight className="w-7 h-7" />
               </button>
-              <button onClick={() => setScreen('role')} className="w-full h-[56px] rounded-[18px] bg-white border-2 border-[#047857] text-[#047857] font-extrabold text-lg active:scale-[0.98] transition-all">{t.register}</button>
+              <button onClick={() => setScreen('role')} className="w-full h-14 rounded-[18px] bg-white border-2 border-[#047857] text-[#047857] font-extrabold text-lg active:scale-[0.98] transition-all">{t.register}</button>
             </div>
           </div>
         </Shell>
@@ -1201,11 +1279,11 @@ export default function PhoneSimulator({
             <div className="pt-20">
               <HamrohLogo />
               <h1 className="text-[40px] leading-tight font-black tracking-tight text-[#0F172A]">Hamroh</h1>
-              <p className="text-[#64748B] mt-5 text-lg leading-8 max-w-[280px]">Надежные поездки между городами Таджикистана</p>
+              <p className="text-[#64748B] mt-5 text-lg leading-8 max-w-70">Надежные поездки между городами Таджикистана</p>
             </div>
             <div className="space-y-4 pb-3">
-              <button onClick={() => setScreen('login')} className="w-full h-[70px] rounded-[20px] bg-[#10B981] text-white font-extrabold text-base shadow-sm active:scale-[0.98] transition-all">{t.login}</button>
-              <button onClick={() => setScreen('role')} className="w-full h-[70px] rounded-[20px] bg-white border border-[#10B981] text-[#047857] font-extrabold text-base active:scale-[0.98] transition-all">{t.register}</button>
+              <button onClick={() => setScreen('login')} className="w-full h-17.5 rounded-[20px] bg-[#10B981] text-white font-extrabold text-base shadow-sm active:scale-[0.98] transition-all">{t.login}</button>
+              <button onClick={() => setScreen('role')} className="w-full h-17.5 rounded-[20px] bg-white border border-[#10B981] text-[#047857] font-extrabold text-base active:scale-[0.98] transition-all">{t.register}</button>
             </div>
           </div>
         </Shell>
@@ -1235,7 +1313,7 @@ export default function PhoneSimulator({
             <button onClick={() => setScreen('welcome')} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#F8FAFC] flex items-center justify-center">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="mx-auto max-w-[250px] text-center">
+            <div className="mx-auto max-w-62.5 text-center">
               <h2 className="text-lg font-black leading-tight">{t.roleChoice}</h2>
               <p className="text-xs text-[#64748B] mt-1">Hamroh</p>
             </div>
@@ -1245,12 +1323,12 @@ export default function PhoneSimulator({
               <button onClick={() => { setRegRole(UserRole.Passenger); setScreen('register'); }} className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6 text-center shadow-sm active:scale-[0.98] transition-all">
                 <Users className="w-8 h-8 text-[#10B981] mx-auto mb-4" />
                 <p className="font-black text-lg">{t.passengerRole}</p>
-                <p className="text-sm text-[#64748B] mt-2 max-w-[240px] mx-auto">{t.passengerRoleDescription}</p>
+                <p className="text-sm text-[#64748B] mt-2 max-w-60 mx-auto">{t.passengerRoleDescription}</p>
               </button>
               <button onClick={() => { setRegRole(UserRole.Driver); setScreen('register'); }} className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6 text-center shadow-sm active:scale-[0.98] transition-all">
                 <Car className="w-8 h-8 text-[#10B981] mx-auto mb-4" />
                 <p className="font-black text-lg">{t.driverRole}</p>
-                <p className="text-sm text-[#64748B] mt-2 max-w-[240px] mx-auto">{t.driverRoleDescription}</p>
+                <p className="text-sm text-[#64748B] mt-2 max-w-60 mx-auto">{t.driverRoleDescription}</p>
               </button>
             </div>
           </div>
@@ -1631,7 +1709,7 @@ export default function PhoneSimulator({
     const passengerActive = passengerBookings.filter(booking => [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)).length;
     return (
       <div className="p-5 space-y-4">
-        <div className="bg-gradient-to-br from-[#047857] to-[#10B981] rounded-[28px] p-5 text-white shadow-lg shadow-emerald-900/20">
+        <div className="bg-linear-to-br from-[#047857] to-[#10B981] rounded-[28px] p-5 text-white shadow-lg shadow-emerald-900/20">
           <div className="flex items-center gap-4">
             <img src={currentUser?.avatarUrl} className="w-20 h-20 rounded-3xl object-cover border-4 border-white/30" alt="" />
             <div className="flex-1">
@@ -2009,9 +2087,9 @@ export default function PhoneSimulator({
     };
     return (
       <Shell>
-        <div className="relative h-[310px] shrink-0 overflow-hidden">
+        <div className="relative h-77.5 shrink-0 overflow-hidden">
           <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=80" className="absolute inset-0 h-full w-full object-cover" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/20 to-black/70" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/15 via-black/20 to-black/70" />
           <div className="absolute left-0 right-0 top-0 px-4 py-4 flex items-center justify-between">
             <button onClick={goBackFromTrip} className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center">
               <ArrowLeft className="w-5 h-5" />
@@ -2034,7 +2112,7 @@ export default function PhoneSimulator({
             <div className="grid grid-cols-[34px_1fr] gap-3">
               <div className="relative flex justify-center">
                 <span className="mt-1 w-5 h-5 rounded-full border-4 border-[#D1FAE5] bg-[#047857]" />
-                <span className="absolute top-7 bottom-[-42px] border-l-2 border-dashed border-[#B7E4D5]" />
+                <span className="absolute top-7 -bottom-10.5 border-l-2 border-dashed border-[#B7E4D5]" />
               </div>
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.22em] text-[#047857]">Точка сбора{selectedTrip.departureTime !== 'По наполнении' ? ` · ${selectedTrip.departureTime}` : ''}</p>
@@ -2155,7 +2233,7 @@ export default function PhoneSimulator({
               <p className="text-xs text-[#64748B]">Итого к оплате</p>
               <p className="text-2xl font-black">{total} сомони</p>
             </div>
-            <button onClick={() => openBooking(selectedTrip)} className="h-14 min-w-[178px] rounded-2xl bg-[#047857] px-5 text-white font-black shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-all">Забронировать {'->'}</button>
+            <button onClick={() => openBooking(selectedTrip)} className="h-14 min-w-44.5 rounded-2xl bg-[#047857] px-5 text-white font-black shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-all">Забронировать {'->'}</button>
           </div>
         </div>
       </Shell>
@@ -2304,7 +2382,7 @@ export default function PhoneSimulator({
         <button onClick={() => setDeviceType('ios')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'ios' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>iOS</button>
         <button onClick={() => setDeviceType('android')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'android' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>Android</button>
       </div>
-      <div className={`relative w-[360px] h-[720px] bg-neutral-900 border-[10px] border-neutral-800 shadow-2xl overflow-hidden select-none ${deviceType === 'ios' ? 'rounded-[48px]' : 'rounded-[36px]'}`}>
+      <div className={`relative w-90 h-180 bg-neutral-900 border-10 border-neutral-800 shadow-2xl overflow-hidden select-none ${deviceType === 'ios' ? 'rounded-[48px]' : 'rounded-[36px]'}`}>
         {deviceType === 'ios' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-50" />}
         {deviceType === 'android' && <div className="absolute top-3 left-1/2 -translate-x-1/2 w-3 h-3 bg-black rounded-full z-50" />}
         <div className="h-8 bg-white px-6 pt-1 flex items-center justify-between z-40 relative text-[#0F172A] text-[10px] font-bold">

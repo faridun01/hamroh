@@ -104,6 +104,8 @@ public sealed class Booking : Entity
     public decimal TotalPrice { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public string PassengerMessage { get; set; } = "";
+    public DateTime? PassengerFinalConfirmedAt { get; set; }
+    public DateTime? DriverFinalConfirmedAt { get; set; }
 }
 
 public sealed class PassengerRequest : Entity
@@ -127,6 +129,8 @@ public sealed class PassengerRequest : Entity
     public Gender? PreferredDriverGender { get; set; }
     public Guid? AcceptedByDriverId { get; set; }
     public User? AcceptedByDriver { get; set; }
+    public Guid? OfferedTripId { get; set; }
+    public Trip? OfferedTrip { get; set; }
     public Guid? BookingId { get; set; }
     public bool PassengerConfirmedDriver { get; set; }
     public string Status { get; set; } = "Open";

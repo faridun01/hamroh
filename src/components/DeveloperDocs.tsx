@@ -352,7 +352,7 @@ export default function DeveloperDocs() {
               </div>
 
               {/* Response inspector */}
-              <div className="flex-1 flex flex-col bg-slate-950 border border-slate-800 rounded-xl p-4 min-h-[140px]">
+              <div className="flex-1 flex flex-col bg-slate-950 border border-slate-800 rounded-xl p-4 min-h-35">
                 <span className="text-xs font-semibold text-slate-300 mb-2">Simulated JSON Response</span>
                 <div className="flex-1 overflow-auto bg-slate-900/50 rounded-lg p-3 font-mono text-xs text-sky-400 border border-slate-900">
                   {apiResponse ? (

@@ -59,6 +59,28 @@ class BookingDetailsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (data.status == 'Accepted' && data.passengerFinalConfirmedAt == null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await ref.read(bookingsRepositoryProvider).confirmByPassenger(data.id);
+                      ref.invalidate(bookingDetailsProvider(bookingId));
+                    },
+                    icon: const Icon(Icons.verified_outlined),
+                    label: const Text('Точно еду'),
+                  ),
+                ),
+              ],
+              if (data.status == 'Accepted') ...[
+                const SizedBox(height: 12),
+                _InfoCard(
+                  title: 'Подтверждение поездки',
+                  subtitle: 'Пассажир: ${data.passengerFinalConfirmedAt == null ? 'ожидается' : 'точно едет'} · Водитель: ${data.driverFinalConfirmedAt == null ? 'ожидается' : 'точно едет'}',
+                  icon: Icons.check_circle_outline,
+                ),
+              ],
             ],
           ),
         ),

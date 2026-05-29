@@ -35,4 +35,12 @@ class BookingsRepository {
     });
     return PageResult.fromJson(response.data['data'] as Map<String, dynamic>, BookingListItem.fromJson);
   }
+
+  Future<void> confirmByPassenger(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/confirm-by-passenger');
+  }
+
+  Future<void> confirmByDriver(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/confirm-by-driver');
+  }
 }
