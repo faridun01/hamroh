@@ -240,6 +240,17 @@ CREATE TABLE IF NOT EXISTS "AuditLogs" (
     "CreatedAt" timestamptz NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "UserRefreshTokens" (
+    "Id" uuid PRIMARY KEY,
+    "CreatedAt" timestamptz NOT NULL,
+    "UpdatedAt" timestamptz NOT NULL,
+    "IsDeleted" boolean NOT NULL DEFAULT false,
+    "UserId" uuid NOT NULL REFERENCES "Users"("Id"),
+    "Token" text NOT NULL,
+    "ExpiresAt" timestamptz NOT NULL,
+    "IsRevoked" boolean NOT NULL DEFAULT false
+);
+
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_Phone" ON "Users"("Phone");
 CREATE INDEX IF NOT EXISTS "IX_Users_Role" ON "Users"("Role");
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_DriverProfiles_UserId" ON "DriverProfiles"("UserId");
@@ -258,4 +269,7 @@ CREATE INDEX IF NOT EXISTS "IX_ChatMessages_Booking_CreatedAt" ON "ChatMessages"
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_Reviews_Booking_FromUser" ON "Reviews"("BookingId", "FromUserId");
 CREATE INDEX IF NOT EXISTS "IX_Notifications_User_Read_CreatedAt" ON "Notifications"("UserId", "IsRead", "CreatedAt");
 CREATE INDEX IF NOT EXISTS "IX_Penalties_Passenger_IsPaid" ON "Penalties"("PassengerId", "IsPaid");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_Payments_PenaltyId" ON "Payments"("PenaltyId") WHERE "PenaltyId" IS NOT NULL;
 CREATE INDEX IF NOT EXISTS "IX_AuditLogs_Actor_CreatedAt" ON "AuditLogs"("ActorUserId", "CreatedAt");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_UserRefreshTokens_Token" ON "UserRefreshTokens"("Token");
+CREATE INDEX IF NOT EXISTS "IX_UserRefreshTokens_UserId" ON "UserRefreshTokens"("UserId");

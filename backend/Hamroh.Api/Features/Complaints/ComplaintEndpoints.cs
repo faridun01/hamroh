@@ -22,6 +22,18 @@ public static class ComplaintEndpoints
             return Results.BadRequest(ApiResponse<object>.Fail("Complaint type and description are required"));
         }
 
+        if (request.BookingId.HasValue)
+        {
+            var canReferenceBooking = await db.Bookings
+                .Include(x => x.Trip)
+                .AnyAsync(x => x.Id == request.BookingId.Value && (x.PassengerId == currentUser.UserId || x.Trip.DriverId == currentUser.UserId), ct);
+
+            if (!canReferenceBooking)
+            {
+                return Results.Forbid();
+            }
+        }
+
         var complaint = new Domain.Complaint
         {
             UserId = currentUser.UserId,

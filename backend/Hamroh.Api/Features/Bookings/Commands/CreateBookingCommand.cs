@@ -21,6 +21,11 @@ public sealed class CreateBookingCommandHandler(
 {
     public async Task<CommandResult<CreateBookingResponse>> Handle(CreateBookingCommand request, CancellationToken ct)
     {
+        if (request.SeatsCount is < 1 or > 8)
+        {
+            return CommandResult<CreateBookingResponse>.BadRequest("Seats count must be between 1 and 8");
+        }
+
         var hasPenalty = await db.Penalties.AnyAsync(x => x.PassengerId == request.PassengerId && !x.IsPaid, ct);
         if (hasPenalty)
         {
@@ -39,7 +44,7 @@ public sealed class CreateBookingCommandHandler(
             PassengerId = request.PassengerId,
             SeatsCount = request.SeatsCount,
             TotalPrice = request.SeatsCount * trip.PricePerSeat,
-            PassengerMessage = request.PassengerMessage,
+            PassengerMessage = request.PassengerMessage.Trim(),
             Status = BookingStatus.Pending
         };
 

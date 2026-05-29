@@ -13,6 +13,12 @@ class AuthRepository {
   final Dio _dio;
   final SecureTokenStore _tokens;
 
+  Future<void> sendOtp({required String phone}) async {
+    await _dio.post('/auth/send-otp', data: {
+      'phone': phone,
+    });
+  }
+
   Future<void> login({required String phone, required String password}) async {
     final response = await _dio.post('/auth/login', data: {
       'phone': phone,
@@ -25,6 +31,18 @@ class AuthRepository {
     );
   }
 
+  Future<void> resetPassword({
+    required String phone,
+    required String otpCode,
+    required String newPassword,
+  }) async {
+    await _dio.post('/auth/reset-password', data: {
+      'phone': phone,
+      'otpCode': otpCode,
+      'newPassword': newPassword,
+    });
+  }
+
   Future<void> registerPassenger({
     required String phone,
     required String password,
@@ -32,9 +50,11 @@ class AuthRepository {
     required String lastName,
     required String gender,
     required String language,
+    required String otpCode,
   }) async {
     final response = await _dio.post('/auth/register/passenger', data: {
       'phone': phone,
+      'otpCode': otpCode,
       'password': password,
       'firstName': firstName,
       'lastName': lastName,
@@ -62,9 +82,11 @@ class AuthRepository {
     required String carColor,
     required int carYear,
     required int seats,
+    required String otpCode,
   }) async {
     await _dio.post('/auth/register/driver', data: {
       'phone': phone,
+      'otpCode': otpCode,
       'password': password,
       'firstName': firstName,
       'lastName': lastName,

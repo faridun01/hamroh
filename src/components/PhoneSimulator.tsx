@@ -80,6 +80,7 @@ type Screen =
   | 'lang'
   | 'welcome'
   | 'login'
+  | 'forgot'
   | 'role'
   | 'register'
   | 'passenger'
@@ -134,6 +135,12 @@ const localizedCopy = {
     login: 'Войти',
     register: 'Зарегистрироваться',
     forgotPassword: 'Забыли пароль?',
+    recoverPassword: 'Восстановить пароль',
+    resetPasswordTitle: 'Восстановление пароля',
+    resetPasswordHint: 'Введите номер телефона, код подтверждения и новый пароль. В демо код: 7171.',
+    verificationCode: 'Код подтверждения',
+    newPassword: 'Новый пароль',
+    savePassword: 'Сохранить пароль',
     password: 'Пароль',
     repeatPassword: 'Повтор',
     firstName: 'Имя',
@@ -154,7 +161,48 @@ const localizedCopy = {
     profile: 'Профиль',
     driverHome: 'Главная',
     create: 'Создать',
-    requests: 'Заявки'
+    requests: 'Заявки',
+    welcomeBack: 'Добро пожаловать',
+    from: 'Откуда',
+    to: 'Куда',
+    date: 'Дата',
+    passengers: 'Пассажиры',
+    verified: 'Проверен',
+    baggage: 'Багаж',
+    woman: 'Женщина',
+    findRide: 'Найти поездку',
+    addressRide: 'Мне нужна поездка от адреса',
+    active: 'Активные',
+    completed: 'Завершенные',
+    noActiveTrips: 'Актуальных поездок пока нет',
+    noCompletedTrips: 'Завершенных поездок пока нет',
+    newCount: 'новых',
+    noNotifications: 'Уведомлений пока нет',
+    tapToOpen: 'Нажмите, чтобы открыть',
+    deleteNotification: 'Удалить уведомление',
+    accept: 'Принять',
+    reject: 'Отклонить',
+    market: 'Рынок поездок',
+    noTripsFromCity: 'Пока нет поездок из этого города',
+    exactTime: 'Точное время',
+    whenFull: 'По наполнении',
+    price: 'Цена',
+    seats: 'Мест',
+    onePrice: 'Одна цена',
+    byRows: 'По рядам',
+    pickupAddress: 'Точный адрес посадки',
+    dropoffPoint: 'Точка высадки',
+    driverComment: 'Комментарий водителя',
+    publishRide: 'Опубликовать поездку',
+    foundTrips: 'Найдено поездок',
+    noTripsFound: 'Поездок не найдено. Измените дату, маршрут или количество мест.',
+    fastest: 'Быстрее всех',
+    seatsShort: 'мест',
+    driver: 'Водитель',
+    tripsWord: 'поездки',
+    save: 'Сохранить',
+    cancel: 'Отмена',
+    close: 'Закрыть'
   },
   [Language.TJ]: {
     languageName: 'Тоҷикӣ',
@@ -164,6 +212,12 @@ const localizedCopy = {
     login: 'Ворид шудан',
     register: 'Рӯйхатгирӣ',
     forgotPassword: 'Паролро фаромӯш кардед?',
+    recoverPassword: 'Барқарор кардани парол',
+    resetPasswordTitle: 'Барқарорсозии парол',
+    resetPasswordHint: 'Рақами телефон, рамзи тасдиқ ва пароли навро ворид кунед. Дар демо рамз: 7171.',
+    verificationCode: 'Рамзи тасдиқ',
+    newPassword: 'Пароли нав',
+    savePassword: 'Нигоҳ доштани парол',
     password: 'Парол',
     repeatPassword: 'Такрор',
     firstName: 'Ном',
@@ -184,7 +238,48 @@ const localizedCopy = {
     profile: 'Профил',
     driverHome: 'Асосӣ',
     create: 'Сохтан',
-    requests: 'Дархостҳо'
+    requests: 'Дархостҳо',
+    welcomeBack: 'Хуш омадед',
+    from: 'Аз куҷо',
+    to: 'Ба куҷо',
+    date: 'Сана',
+    passengers: 'Мусофирон',
+    verified: 'Санҷида',
+    baggage: 'Бор',
+    woman: 'Зан',
+    findRide: 'Ҷустуҷӯи сафар',
+    addressRide: 'Ба ман сафар аз суроға лозим аст',
+    active: 'Фаъол',
+    completed: 'Анҷомшуда',
+    noActiveTrips: 'Ҳоло сафари фаъол нест',
+    noCompletedTrips: 'Ҳоло сафари анҷомшуда нест',
+    newCount: 'нав',
+    noNotifications: 'Ҳоло огоҳӣ нест',
+    tapToOpen: 'Барои кушодан зер кунед',
+    deleteNotification: 'Огоҳиро нест кардан',
+    accept: 'Қабул',
+    reject: 'Рад',
+    market: 'Бозори сафарҳо',
+    noTripsFromCity: 'Ҳоло аз ин шаҳр сафар нест',
+    exactTime: 'Вақти дақиқ',
+    whenFull: 'Ҳангоми пур шудан',
+    price: 'Нарх',
+    seats: 'Ҷой',
+    onePrice: 'Як нарх',
+    byRows: 'Аз рӯи қатор',
+    pickupAddress: 'Суроғаи дақиқи нишаст',
+    dropoffPoint: 'Ҷои фаромадан',
+    driverComment: 'Шарҳи ронанда',
+    publishRide: 'Нашри сафар',
+    foundTrips: 'Сафарҳои ёфтшуда',
+    noTripsFound: 'Сафар ёфт нашуд. Сана, масир ё шумораи ҷойҳоро тағйир диҳед.',
+    fastest: 'Зудтарин',
+    seatsShort: 'ҷой',
+    driver: 'Ронанда',
+    tripsWord: 'сафар',
+    save: 'Нигоҳ доштан',
+    cancel: 'Бекор',
+    close: 'Пӯшидан'
   },
   [Language.EN]: {
     languageName: 'English',
@@ -194,6 +289,12 @@ const localizedCopy = {
     login: 'Log in',
     register: 'Register',
     forgotPassword: 'Forgot password?',
+    recoverPassword: 'Recover password',
+    resetPasswordTitle: 'Password recovery',
+    resetPasswordHint: 'Enter your phone number, verification code, and a new password. Demo code: 7171.',
+    verificationCode: 'Verification code',
+    newPassword: 'New password',
+    savePassword: 'Save password',
     password: 'Password',
     repeatPassword: 'Repeat',
     firstName: 'First name',
@@ -214,7 +315,48 @@ const localizedCopy = {
     profile: 'Profile',
     driverHome: 'Home',
     create: 'Create',
-    requests: 'Requests'
+    requests: 'Requests',
+    welcomeBack: 'Welcome',
+    from: 'From',
+    to: 'To',
+    date: 'Date',
+    passengers: 'Passengers',
+    verified: 'Verified',
+    baggage: 'Baggage',
+    woman: 'Woman',
+    findRide: 'Find a ride',
+    addressRide: 'I need a ride from an address',
+    active: 'Active',
+    completed: 'Completed',
+    noActiveTrips: 'No active rides yet',
+    noCompletedTrips: 'No completed rides yet',
+    newCount: 'new',
+    noNotifications: 'No notifications yet',
+    tapToOpen: 'Tap to open',
+    deleteNotification: 'Delete notification',
+    accept: 'Accept',
+    reject: 'Reject',
+    market: 'Ride market',
+    noTripsFromCity: 'No rides from this city yet',
+    exactTime: 'Exact time',
+    whenFull: 'When full',
+    price: 'Price',
+    seats: 'Seats',
+    onePrice: 'One price',
+    byRows: 'By rows',
+    pickupAddress: 'Exact pickup address',
+    dropoffPoint: 'Dropoff point',
+    driverComment: 'Driver comment',
+    publishRide: 'Publish ride',
+    foundTrips: 'Rides found',
+    noTripsFound: 'No rides found. Change date, route, or seats.',
+    fastest: 'Fastest',
+    seatsShort: 'seats',
+    driver: 'Driver',
+    tripsWord: 'rides',
+    save: 'Save',
+    cancel: 'Cancel',
+    close: 'Close'
   }
 };
 
@@ -285,6 +427,9 @@ export default function PhoneSimulator({
 
   const [authPhone, setAuthPhone] = useState('+992');
   const [authPassword, setAuthPassword] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
   const [regRole, setRegRole] = useState<UserRole>(UserRole.Passenger);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -364,7 +509,7 @@ export default function PhoneSimulator({
   const [reviewText, setReviewText] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
 
-  const t = localizedCopy[currentUser?.language || language] || localizedCopy[Language.RU];
+  const t = localizedCopy[language] || localizedCopy[Language.RU];
   const selectedTrip = trips.find(trip => trip.id === selectedTripId);
   const myNotifications = notifications
     .filter(item => item.userId === currentUser?.id && !hiddenNotificationIds.includes(item.id))
@@ -569,8 +714,26 @@ export default function PhoneSimulator({
     if (!user) return show('Неверный телефон или пароль');
     if (!user.isActive) return show('Профиль заблокирован');
     setCurrentUser(user);
-    setLanguage(user.language);
     setScreen(user.role === UserRole.Driver ? 'driver' : 'passenger');
+  };
+
+  const recoverPassword = () => {
+    const phone = authPhone.trim();
+    const user = users.find(item => item.phone === phone);
+    if (!user) return show('Пользователь с таким телефоном не найден');
+    if (resetCode.trim() !== '7171') return show('Неверный код подтверждения');
+    if (resetPassword.length < 4) return show('Пароль должен быть не короче 4 символов');
+    if (resetPassword !== resetConfirmPassword) return show('Пароли не совпадают');
+
+    setUsers(prev => prev.map(item =>
+      item.id === user.id ? { ...item, password: resetPassword, updatedAt: new Date().toISOString() } : item
+    ));
+    setAuthPassword('');
+    setResetCode('');
+    setResetPassword('');
+    setResetConfirmPassword('');
+    setScreen('login');
+    show('Пароль обновлен. Войдите с новым паролем');
   };
 
   const register = () => {
@@ -1224,9 +1387,15 @@ export default function PhoneSimulator({
     );
   }, []);
 
+  const cityLabel = (city: City) => {
+    if (language === Language.TJ) return city.nameTj || city.nameRu;
+    if (language === Language.EN) return city.nameRu;
+    return city.nameRu;
+  };
+
   const CitySelect = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
     <select value={value} onChange={event => onChange(event.target.value)} className={selectClass}>
-      {cities.map(item => <option key={item.id} value={item.nameRu}>{item.nameRu}</option>)}
+      {cities.map(item => <option key={item.id} value={item.nameRu}>{cityLabel(item)}</option>)}
     </select>
   );
 
@@ -1238,7 +1407,7 @@ export default function PhoneSimulator({
     const isFastest = shownPrice >= 150 || formatDuration(trip).startsWith('3');
     return (
       <button onClick={() => { setSelectedTripId(trip.id); setSelectedSeats(Math.min(searchSeats, trip.availableSeats)); setTripBackTarget(screen === 'results' ? 'results' : currentUser?.role === UserRole.Driver ? 'driver' : 'passenger'); setScreen('trip'); }} className={`relative w-full text-left bg-white rounded-[22px] border p-4 space-y-4 shadow-sm active:scale-[0.99] transition-all overflow-hidden ${isFastest ? 'border-[#047857]' : 'border-[#E2E8F0]'}`}>
-        {isFastest && <span className="absolute right-0 top-0 rounded-bl-2xl bg-[#047857] px-4 py-2 text-xs font-black text-white">Быстрее всех</span>}
+        {isFastest && <span className="absolute right-0 top-0 rounded-bl-2xl bg-[#047857] px-4 py-2 text-xs font-black text-white">{t.fastest}</span>}
         <div className="grid grid-cols-[92px_1fr_auto] gap-3 items-start pt-3">
           <div className="space-y-8">
             <p className="text-2xl font-black leading-none">{trip.departureTime}</p>
@@ -1258,14 +1427,14 @@ export default function PhoneSimulator({
             <p className="text-2xl font-black text-[#047857]">{shownPrice}</p>
             <p className="text-sm font-black text-[#047857]">смн</p>
             {trip.pricingMode === 'row' && <p className="text-[10px] font-bold text-[#64748B]">от</p>}
-            <p className={`mt-3 text-sm font-black ${trip.availableSeats <= 1 ? 'text-red-600' : 'text-[#047857]'}`}>{trip.availableSeats} мест</p>
+            <p className={`mt-3 text-sm font-black ${trip.availableSeats <= 1 ? 'text-red-600' : 'text-[#047857]'}`}>{trip.availableSeats} {t.seatsShort}</p>
           </div>
         </div>
         <div className="h-px bg-[#E2E8F0]" />
         <div className="flex items-center gap-3">
           <img src={driver?.avatarUrl} className="w-14 h-14 rounded-2xl object-cover" alt="" />
           <div className="flex-1 min-w-0">
-            <p className="text-xl font-black truncate">{driver?.fullName?.split(' ')[0] || 'Водитель'} <span className="text-base font-bold">{profile?.rating || '4.8'}</span></p>
+            <p className="text-xl font-black truncate">{driver?.fullName?.split(' ')[0] || t.driver} <span className="text-base font-bold">{profile?.rating || '4.8'}</span></p>
             <p className="text-sm text-[#334155] truncate">{vehicle?.brand} {vehicle?.model} · {vehicle?.color}</p>
           </div>
           {isVerifiedDriver(trip.driverId) && <ShieldCheck className="w-7 h-7 text-[#10B981]" />}
@@ -1328,7 +1497,7 @@ export default function PhoneSimulator({
               </div>
               <h1 className="text-4xl font-black tracking-tight text-[#0F172A]">Hamroh</h1>
             </div>
-            {([['Русский', Language.RU], ['Тоҷикӣ', Language.TJ], ['English', Language.EN]] as const).map(([label, lang]) => (
+            {([['Тоҷикӣ', Language.TJ], ['Русский', Language.RU], ['English', Language.EN]] as const).map(([label, lang]) => (
               <button key={lang} onClick={() => { setLanguage(lang); setScreen('welcome'); }} className="h-14 rounded-2xl bg-white border border-[#E2E8F0] font-bold text-center px-4 shadow-sm active:scale-[0.98] transition-all">
                 {label}
               </button>
@@ -1394,7 +1563,25 @@ export default function PhoneSimulator({
               <input value={authPhone} onChange={event => updateAuthPhone(event.target.value)} className={inputClass} inputMode="tel" placeholder="+992900111111" />
               <input value={authPassword} onChange={event => setAuthPassword(event.target.value)} className={inputClass} type="password" placeholder={t.password} />
               <button onClick={login} className={primaryClass}>{t.login}</button>
-              <button className="w-full text-center text-sm text-[#047857] font-bold">{t.forgotPassword}</button>
+              <button onClick={() => setScreen('forgot')} className="w-full text-center text-sm text-[#047857] font-bold">{t.forgotPassword}</button>
+            </div>
+          </div>
+        </Shell>
+      );
+    }
+
+    if (screen === 'forgot') {
+      return (
+        <Shell>
+          <Header title={t.resetPasswordTitle} back={() => setScreen('login')} />
+          <div className="flex-1 flex items-center px-5">
+            <div className="w-full space-y-4 -mt-10">
+              <p className="text-sm text-[#64748B] leading-6">{t.resetPasswordHint}</p>
+              <input value={authPhone} onChange={event => updateAuthPhone(event.target.value)} className={inputClass} inputMode="tel" placeholder="+992900111111" />
+              <input value={resetCode} onChange={event => setResetCode(event.target.value)} className={inputClass} inputMode="numeric" placeholder={t.verificationCode} />
+              <input value={resetPassword} onChange={event => setResetPassword(event.target.value)} className={inputClass} type="password" placeholder={t.newPassword} />
+              <input value={resetConfirmPassword} onChange={event => setResetConfirmPassword(event.target.value)} className={inputClass} type="password" placeholder={t.repeatPassword} />
+              <button onClick={recoverPassword} className={primaryClass}>{t.savePassword}</button>
             </div>
           </div>
         </Shell>
@@ -1490,7 +1677,7 @@ export default function PhoneSimulator({
           <div className="p-5 space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#64748B]">Добро пожаловать</p>
+                <p className="text-sm text-[#64748B]">{t.welcomeBack}</p>
                 <h2 className="text-2xl font-black">{currentUser?.fullName.split(' ')[0]}</h2>
               </div>
               <button onClick={() => setPassengerTab('notifications')} className="w-11 h-11 rounded-2xl bg-white border border-[#E2E8F0] flex items-center justify-center relative">
@@ -1505,31 +1692,31 @@ export default function PhoneSimulator({
               </div>
             )}
             <div className="bg-white rounded-[28px] border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
-              <label className="text-xs font-bold text-[#64748B]">Откуда</label>
+              <label className="text-xs font-bold text-[#64748B]">{t.from}</label>
               <CitySelect value={fromCity} onChange={setFromCity} />
-              <label className="text-xs font-bold text-[#64748B]">Куда</label>
+              <label className="text-xs font-bold text-[#64748B]">{t.to}</label>
               <CitySelect value={toCity} onChange={setToCity} />
-              <div className="grid grid-cols-2 gap-3">
-                <label className="space-y-1">
-                  <span className="text-xs font-bold text-[#64748B]">Дата</span>
+              <div className="grid grid-cols-[minmax(0,1fr)_112px] gap-3">
+                <label className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-[#64748B]">{t.date}</span>
                   <input type="date" value={date} onChange={event => setDate(event.target.value)} className={inputClass} />
                 </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-bold text-[#64748B]">Пассажиры</span>
+                <label className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-[#64748B]">{t.passengers}</span>
                   <select value={searchSeats} onChange={event => setSearchSeats(Number(event.target.value))} className={selectClass}>
                     {[1, 2, 3, 4].map(item => <option key={item} value={item}>{item}</option>)}
                   </select>
                 </label>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <button onClick={() => setFilterVerified(!filterVerified)} className={`h-10 rounded-xl text-xs font-bold border ${filterVerified ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>Проверен</button>
-                <button onClick={() => setFilterBaggage(!filterBaggage)} className={`h-10 rounded-xl text-xs font-bold border ${filterBaggage ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>Багаж</button>
-                <button onClick={() => setFilterWomen(!filterWomen)} className={`h-10 rounded-xl text-xs font-bold border ${filterWomen ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>Women</button>
+                <button onClick={() => setFilterVerified(!filterVerified)} className={`h-10 rounded-xl text-xs font-bold border ${filterVerified ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.verified}</button>
+                <button onClick={() => setFilterBaggage(!filterBaggage)} className={`h-10 rounded-xl text-xs font-bold border ${filterBaggage ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.baggage}</button>
+                <button onClick={() => setFilterWomen(!filterWomen)} className={`h-10 rounded-xl text-xs font-bold border ${filterWomen ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.woman}</button>
               </div>
-              <button onClick={() => setScreen('results')} className={primaryClass}>Найти поездку</button>
+              <button onClick={() => setScreen('results')} className={primaryClass}>{t.findRide}</button>
             </div>
             <button onClick={() => setScreen('request')} className="w-full h-14 rounded-2xl bg-white border border-[#10B981] text-[#047857] font-extrabold flex items-center justify-center gap-2">
-              <Home className="w-5 h-5" /> Мне нужна поездка от адреса
+              <Home className="w-5 h-5" /> {t.addressRide}
             </button>
           </div>
         )}
@@ -1555,16 +1742,16 @@ export default function PhoneSimulator({
 
       return (
         <div className="p-5 space-y-4">
-          <h2 className="text-xl font-black">Поездки</h2>
+          <h2 className="text-xl font-black">{t.trips}</h2>
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
             <button onClick={() => setView('active')} className={`h-11 rounded-xl text-sm font-black transition-all ${view === 'active' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#64748B]'}`}>
-              Актуальная
+              {t.active}
             </button>
             <button onClick={() => setView('completed')} className={`h-11 rounded-xl text-sm font-black transition-all ${view === 'completed' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#64748B]'}`}>
-              Завершённые
+              {t.completed}
             </button>
           </div>
-          {myTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-6 text-center">{view === 'active' ? 'Актуальных поездок пока нет' : 'Завершённых поездок пока нет'}</p>}
+          {myTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-6 text-center">{view === 'active' ? t.noActiveTrips : t.noCompletedTrips}</p>}
           {myTrips.map(trip => {
             const tripBookings = bookings.filter(booking => booking.tripId === trip.id);
             const acceptedTripBookings = tripBookings.filter(booking => booking.status === BookingStatus.Accepted);
@@ -1583,11 +1770,11 @@ export default function PhoneSimulator({
                 <p className="text-sm text-[#64748B]">{trip.pickupPoint} {'->'} {trip.dropoffPoint}</p>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-2xl bg-[#F8FAFC] p-3">
-                    <p className="text-[11px] text-[#64748B]">Цена</p>
+                    <p className="text-[11px] text-[#64748B]">{t.price}</p>
                     <p className="font-black">{trip.pricingMode === 'row' ? `от ${money(displayPriceForTrip(trip))}` : money(trip.pricePerSeat)}</p>
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-3">
-                    <p className="text-[11px] text-[#64748B]">Свободно</p>
+                    <p className="text-[11px] text-[#64748B]">{t.seats}</p>
                     <p className="font-black">{trip.availableSeats}</p>
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-3">
@@ -1777,7 +1964,7 @@ export default function PhoneSimulator({
     return (
       <div className="p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black">Сообщения</h2>
+          <h2 className="text-xl font-black">{t.messages}</h2>
           {activePeer && <button onClick={() => setHiddenChatUserIds(prev => [...prev, activePeer.id])} className="text-xs font-black text-rose-600">Удалить чат</button>}
         </div>
         {peers.length === 0 ? <p className="bg-white rounded-3xl p-6 text-sm text-[#64748B]">Чат доступен только после подтверждения и до завершения поездки.</p> : (
@@ -1814,10 +2001,10 @@ export default function PhoneSimulator({
   const Notifications = () => (
     <div className="p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-black">Уведомления</h2>
-        {myNotifications.length > 0 && <span className="text-xs font-black text-[#047857]">{unreadNotificationsCount} новых</span>}
+        <h2 className="text-xl font-black">{t.notifications}</h2>
+        {myNotifications.length > 0 && <span className="text-xs font-black text-[#047857]">{unreadNotificationsCount} {t.newCount}</span>}
       </div>
-      {myNotifications.length === 0 && <p className="bg-white rounded-3xl p-6 text-sm text-[#64748B]">Уведомлений пока нет</p>}
+      {myNotifications.length === 0 && <p className="bg-white rounded-3xl p-6 text-sm text-[#64748B]">{t.noNotifications}</p>}
       {myNotifications.map(item => {
         const relatedBooking = bookings.find(booking => booking.id === item.bookingId);
         const canReplyToBooking = currentUser?.role === UserRole.Driver && item.type === 'booking_request' && relatedBooking?.status === BookingStatus.Pending;
@@ -1826,7 +2013,7 @@ export default function PhoneSimulator({
             <button onClick={() => openNotification(item)} className="w-full text-left">
               <p className="font-black">{item.title}</p>
               <p className="text-sm text-[#64748B] mt-1">{item.message}</p>
-              <p className="text-[11px] font-bold text-[#94A3B8] mt-2">Нажмите, чтобы открыть</p>
+              <p className="text-[11px] font-bold text-[#94A3B8] mt-2">{t.tapToOpen}</p>
             </button>
             {canReplyToBooking && relatedBooking && (
               <div className="grid grid-cols-2 gap-3 mt-4">
@@ -1837,7 +2024,7 @@ export default function PhoneSimulator({
                   }}
                   className="h-11 rounded-2xl bg-rose-50 text-rose-700 font-black"
                 >
-                  Отклонить
+                  {t.reject}
                 </button>
                 <button
                   onClick={() => {
@@ -1847,11 +2034,11 @@ export default function PhoneSimulator({
                   }}
                   className="h-11 rounded-2xl bg-[#10B981] text-white font-black"
                 >
-                  Принять
+                  {t.accept}
                 </button>
               </div>
             )}
-            <button onClick={() => setHiddenNotificationIds(prev => [...prev, item.id])} className="mt-3 text-xs font-black text-rose-600">Удалить уведомление</button>
+            <button onClick={() => setHiddenNotificationIds(prev => [...prev, item.id])} className="mt-3 text-xs font-black text-rose-600">{t.deleteNotification}</button>
           </div>
         );
       })}
@@ -1980,7 +2167,7 @@ export default function PhoneSimulator({
         <div className="flex-1 min-h-0 overflow-y-auto">
           {driverTab === 'home' && (
             <div className="p-5 space-y-4">
-              <h2 className="text-2xl font-black">Главная</h2>
+              <h2 className="text-2xl font-black">{t.driverHome}</h2>
               {!isVerified && <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 text-sm text-amber-800 font-semibold">Ваш профиль водителя отправлен на проверку. Создание поездок и принятие пассажиров недоступны до одобрения.</div>}
               <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F8FAFC] p-1">
@@ -2009,7 +2196,7 @@ export default function PhoneSimulator({
                   <h3 className="font-black">{driverHomeMode === 'city' ? 'Актуальные поездки из города' : 'Актуальные поездки по маршруту'}</h3>
                   <span className="text-xs font-black text-[#047857]">{marketTrips.length}</span>
                 </div>
-                {marketTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">Пока нет поездок из этого города</p>}
+                {marketTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">{t.noTripsFromCity}</p>}
                 {marketTrips.slice(0, 4).map(trip => <TripCard key={trip.id} trip={trip} />)}
               </div>}
               {driverHomeView === 'requests' && <div className="space-y-3">
@@ -2024,7 +2211,7 @@ export default function PhoneSimulator({
           )}
           {driverTab === 'create' && (
             <div className="p-5 space-y-4">
-              <h2 className="text-xl font-black">{editingTripId ? 'Изменить поездку' : 'Создать поездку'}</h2>
+              <h2 className="text-xl font-black">{editingTripId ? t.create : t.create}</h2>
               {activeTrip && !editingTripId ? (
                 <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4 space-y-3">
                   <p className="font-black text-rose-700">Завершите текущую поездку, чтобы создать новую</p>
@@ -2041,17 +2228,17 @@ export default function PhoneSimulator({
                     <input value={createTime} onChange={event => setCreateTime(event.target.value)} disabled={createTimeMode === 'whenFull'} className={inputClass} placeholder="09:00" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
-                    <button onClick={() => setCreateTimeMode('exact')} className={`h-11 rounded-xl text-xs font-black ${createTimeMode === 'exact' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Точное время</button>
-                    <button onClick={() => setCreateTimeMode('whenFull')} className={`h-11 rounded-xl text-xs font-black ${createTimeMode === 'whenFull' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>По наполнении</button>
+                    <button onClick={() => setCreateTimeMode('exact')} className={`h-11 rounded-xl text-xs font-black ${createTimeMode === 'exact' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>{t.exactTime}</button>
+                    <button onClick={() => setCreateTimeMode('whenFull')} className={`h-11 rounded-xl text-xs font-black ${createTimeMode === 'whenFull' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>{t.whenFull}</button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <input type="number" value={createPrice} onChange={event => setCreatePrice(Number(event.target.value))} className={inputClass} placeholder="Цена" />
-                    <input type="number" value={createSeats} onChange={event => setCreateSeats(Number(event.target.value))} className={inputClass} placeholder="Мест" />
+                    <input type="number" value={createPrice} onChange={event => setCreatePrice(Number(event.target.value))} className={inputClass} placeholder={t.price} />
+                    <input type="number" value={createSeats} onChange={event => setCreateSeats(Number(event.target.value))} className={inputClass} placeholder={t.seats} />
                   </div>
                   <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-4">
                     <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F8FAFC] p-1">
-                      <button onClick={() => setCreatePricingMode('flat')} className={`h-11 rounded-xl text-xs font-black ${createPricingMode === 'flat' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Одна цена</button>
-                      <button onClick={() => setCreatePricingMode('row')} className={`h-11 rounded-xl text-xs font-black ${createPricingMode === 'row' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>По рядам</button>
+                      <button onClick={() => setCreatePricingMode('flat')} className={`h-11 rounded-xl text-xs font-black ${createPricingMode === 'flat' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>{t.onePrice}</button>
+                      <button onClick={() => setCreatePricingMode('row')} className={`h-11 rounded-xl text-xs font-black ${createPricingMode === 'row' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>{t.byRows}</button>
                     </div>
                     {createPricingMode === 'flat' ? (
                       <p className="text-xs text-[#64748B]">Для всех мест будет использоваться общая цена: {money(createPrice)}.</p>
@@ -2082,27 +2269,27 @@ export default function PhoneSimulator({
                     )}
                   </div>
                   <div className="space-y-2">
-                    <input value={createPickup} onChange={event => setCreatePickup(event.target.value)} className={inputClass} placeholder="Точный адрес посадки" />
+                    <input value={createPickup} onChange={event => setCreatePickup(event.target.value)} className={inputClass} placeholder={t.pickupAddress} />
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setPointFromLocation('tripPickup')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Моя локация</button>
                       <button type="button" onClick={() => setPointFromMap('tripPickup')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Выбрать на карте</button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <input value={createDropoff} onChange={event => setCreateDropoff(event.target.value)} className={inputClass} placeholder="Точка высадки" />
+                    <input value={createDropoff} onChange={event => setCreateDropoff(event.target.value)} className={inputClass} placeholder={t.dropoffPoint} />
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setPointFromLocation('tripDropoff')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Моя локация</button>
                       <button type="button" onClick={() => setPointFromMap('tripDropoff')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Выбрать на карте</button>
                     </div>
                   </div>
-                  <textarea value={createComment} onChange={event => setCreateComment(event.target.value)} className="w-full min-h-24 rounded-2xl bg-white border border-[#E2E8F0] p-3 text-sm outline-none" placeholder="Комментарий водителя" />
+                  <textarea value={createComment} onChange={event => setCreateComment(event.target.value)} className="w-full min-h-24 rounded-2xl bg-white border border-[#E2E8F0] p-3 text-sm outline-none" placeholder={t.driverComment} />
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => setCreateBaggage(!createBaggage)} className={`h-12 rounded-2xl border font-bold ${createBaggage ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>Багаж</button>
-                    <button onClick={() => setCreateWomen(!createWomen)} className={`h-12 rounded-2xl border font-bold ${createWomen ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>Women-friendly</button>
+                    <button onClick={() => setCreateBaggage(!createBaggage)} className={`h-12 rounded-2xl border font-bold ${createBaggage ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.baggage}</button>
+                    <button onClick={() => setCreateWomen(!createWomen)} className={`h-12 rounded-2xl border font-bold ${createWomen ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.woman}</button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {editingTripId && <button onClick={() => { resetTripForm(); setDriverTab('trips'); }} className="h-14 rounded-2xl bg-white border border-[#E2E8F0] text-[#64748B] font-black">Отмена</button>}
-                    <button disabled={!isVerified} onClick={publishTrip} className={editingTripId ? 'h-14 rounded-2xl bg-[#10B981] text-white font-extrabold text-sm shadow-sm active:scale-[0.98] transition-all disabled:bg-slate-200 disabled:text-slate-400' : primaryClass}>{editingTripId ? 'Сохранить' : 'Опубликовать поездку'}</button>
+                    {editingTripId && <button onClick={() => { resetTripForm(); setDriverTab('trips'); }} className="h-14 rounded-2xl bg-white border border-[#E2E8F0] text-[#64748B] font-black">{t.cancel}</button>}
+                    <button disabled={!isVerified} onClick={publishTrip} className={editingTripId ? 'h-14 rounded-2xl bg-[#10B981] text-white font-extrabold text-sm shadow-sm active:scale-[0.98] transition-all disabled:bg-slate-200 disabled:text-slate-400' : primaryClass}>{editingTripId ? t.save : t.publishRide}</button>
                   </div>
                 </>
               )}
@@ -2110,7 +2297,7 @@ export default function PhoneSimulator({
           )}
           {driverTab === 'requests' && (
             <div className="p-5 space-y-4">
-              <h2 className="text-xl font-black">Заявки пассажиров</h2>
+              <h2 className="text-xl font-black">{t.requests}</h2>
               {pendingBookings.length > 0 && <h3 className="font-black text-sm text-[#64748B]">Брони на ваши поездки</h3>}
               {pendingBookings.map(booking => {
                 const trip = trips.find(item => item.id === booking.tripId);
@@ -2224,8 +2411,8 @@ export default function PhoneSimulator({
           </div>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto p-5 pb-24 space-y-4 bg-[#FAF7FF]">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#334155]">Найдено {filteredTrips.length} поездок</p>
-          {filteredTrips.length === 0 && <div className="bg-white rounded-3xl p-6 text-center text-[#64748B]">Поездок не найдено. Измените дату, маршрут или количество мест.</div>}
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#334155]">{t.foundTrips}: {filteredTrips.length}</p>
+          {filteredTrips.length === 0 && <div className="bg-white rounded-3xl p-6 text-center text-[#64748B]">{t.noTripsFound}</div>}
           {filteredTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
         </div>
       </Shell>
@@ -2535,7 +2722,7 @@ export default function PhoneSimulator({
   );
 
   let content: React.ReactNode;
-  if (!currentUser && ['lang', 'welcome', 'login', 'role', 'register'].includes(screen)) content = AuthScreens();
+  if (!currentUser && ['lang', 'welcome', 'login', 'forgot', 'role', 'register'].includes(screen)) content = AuthScreens();
   else if (screen === 'results') content = ResultsScreen();
   else if (screen === 'trip') content = TripDetailsScreen();
   else if (screen === 'booking') content = BookingScreen();

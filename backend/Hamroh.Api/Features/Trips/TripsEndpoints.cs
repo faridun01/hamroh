@@ -44,6 +44,24 @@ public static class TripsEndpoints
 
     private static async Task<IResult> CreateTrip(CreateTripRequest request, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
     {
+        if (request.TotalSeats is < 1 or > 8)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Total seats must be between 1 and 8"));
+        }
+
+        if (request.PricePerSeat <= 0)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Price per seat must be greater than zero"));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FromCity) ||
+            string.IsNullOrWhiteSpace(request.ToCity) ||
+            string.IsNullOrWhiteSpace(request.PickupPoint) ||
+            string.IsNullOrWhiteSpace(request.DropoffPoint))
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Route and pickup/dropoff points are required"));
+        }
+
         var profile = await db.DriverProfiles.SingleOrDefaultAsync(x => x.UserId == currentUser.UserId, ct);
         if (profile?.VerificationStatus != VerificationStatus.Verified)
         {
@@ -71,14 +89,14 @@ public static class TripsEndpoints
         {
             DriverId = currentUser.UserId,
             VehicleId = request.VehicleId,
-            FromCity = request.FromCity,
-            ToCity = request.ToCity,
+            FromCity = request.FromCity.Trim(),
+            ToCity = request.ToCity.Trim(),
             DepartureDate = request.DepartureDate,
             DepartureTime = request.DepartureTime,
-            PickupPoint = request.PickupPoint,
+            PickupPoint = request.PickupPoint.Trim(),
             PickupLatitude = request.PickupLatitude,
             PickupLongitude = request.PickupLongitude,
-            DropoffPoint = request.DropoffPoint,
+            DropoffPoint = request.DropoffPoint.Trim(),
             DropoffLatitude = request.DropoffLatitude,
             DropoffLongitude = request.DropoffLongitude,
             PricePerSeat = request.PricePerSeat,
@@ -86,7 +104,7 @@ public static class TripsEndpoints
             AvailableSeats = request.TotalSeats,
             AllowBaggage = request.AllowBaggage,
             WomenFriendly = request.WomenFriendly,
-            DriverComment = request.DriverComment,
+            DriverComment = request.DriverComment.Trim(),
             Status = TripStatus.Published
         };
 

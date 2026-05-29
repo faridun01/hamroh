@@ -107,6 +107,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.Property(x => x.Amount).HasPrecision(12, 2);
         });
 
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasIndex(x => x.PenaltyId).IsUnique().HasFilter("\"PenaltyId\" IS NOT NULL");
+            entity.Property(x => x.Amount).HasPrecision(12, 2);
+        });
+
         modelBuilder.Entity<AuditLog>(entity =>
         {
             entity.HasKey(x => x.Id);

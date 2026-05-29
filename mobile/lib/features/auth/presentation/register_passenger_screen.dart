@@ -14,6 +14,7 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
   final firstName = TextEditingController();
   final lastName = TextEditingController();
   final phone = TextEditingController(text: '+992');
+  final otpCode = TextEditingController();
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
   String gender = 'Male';
@@ -26,6 +27,7 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
     firstName.dispose();
     lastName.dispose();
     phone.dispose();
+    otpCode.dispose();
     password.dispose();
     confirmPassword.dispose();
     super.dispose();
@@ -58,6 +60,19 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
             TextField(controller: lastName, decoration: const InputDecoration(labelText: 'Фамилия')),
             const SizedBox(height: 12),
             TextField(controller: phone, onChanged: _keepCountryCode, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Телефон')),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(controller: otpCode, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'SMS код')),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton(
+                  onPressed: loading ? null : _sendOtp,
+                  child: const Text('Код'),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             TextField(controller: password, obscureText: true, decoration: const InputDecoration(labelText: 'Пароль')),
             const SizedBox(height: 12),
@@ -106,7 +121,7 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
       return;
     }
 
-    if (firstName.text.trim().isEmpty || lastName.text.trim().isEmpty || password.text.isEmpty) {
+    if (firstName.text.trim().isEmpty || lastName.text.trim().isEmpty || otpCode.text.trim().isEmpty || password.text.isEmpty) {
       setState(() => error = 'Заполните обязательные поля.');
       return;
     }
@@ -124,10 +139,27 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
             lastName: lastName.text.trim(),
             gender: gender,
             language: language,
+            otpCode: otpCode.text.trim(),
           );
       if (mounted) context.go('/passenger');
     } catch (_) {
       if (mounted) setState(() => error = 'Не удалось зарегистрироваться. Проверьте данные.');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _sendOtp() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
+    try {
+      await ref.read(authRepositoryProvider).sendOtp(phone: phone.text.trim());
+      if (mounted) setState(() => error = 'SMS код отправлен.');
+    } catch (_) {
+      if (mounted) setState(() => error = 'Не удалось отправить SMS код.');
     } finally {
       if (mounted) setState(() => loading = false);
     }

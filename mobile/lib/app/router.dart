@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamroh_mobile/features/auth/presentation/language_selection_screen.dart';
 import 'package:hamroh_mobile/features/auth/presentation/login_screen.dart';
+import 'package:hamroh_mobile/features/auth/presentation/forgot_password_screen.dart';
 import 'package:hamroh_mobile/features/auth/presentation/onboarding_screen.dart';
 import 'package:hamroh_mobile/features/auth/presentation/register_driver_screen.dart';
 import 'package:hamroh_mobile/features/auth/presentation/register_passenger_screen.dart';
@@ -18,6 +19,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/language', builder: (context, state) => const LanguageSelectionScreen()),
       GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/register/role', builder: (context, state) => const RoleSelectionScreen()),
       GoRoute(path: '/register/passenger', builder: (context, state) => const RegisterPassengerScreen()),
       GoRoute(path: '/register/driver', builder: (context, state) => const RegisterDriverScreen()),

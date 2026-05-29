@@ -66,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: loading ? const CircularProgressIndicator.adaptive() : Text(text.login),
                   ),
                   const SizedBox(height: 12),
-                  Center(child: TextButton(onPressed: () {}, child: Text(text.forgotPassword))),
+                  Center(child: TextButton(onPressed: () => context.go('/forgot-password'), child: Text(text.forgotPassword))),
                   if (error != null) ...[
                     const SizedBox(height: 8),
                     Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),

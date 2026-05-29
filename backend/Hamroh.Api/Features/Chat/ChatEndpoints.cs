@@ -59,16 +59,21 @@ public static class ChatEndpoints
             return Results.BadRequest(ApiResponse<object>.Fail("Chat is available only during an accepted active booking"));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Body))
+        var body = request.Body.Trim();
+        if (string.IsNullOrWhiteSpace(body))
         {
             return Results.BadRequest(ApiResponse<object>.Fail("Message body is required"));
+        }
+        if (body.Length > 2000)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Message body must be 2000 characters or less"));
         }
 
         var message = new ChatMessage
         {
             BookingId = bookingId,
             SenderId = currentUser.UserId,
-            Body = request.Body.Trim()
+            Body = body
         };
 
         db.ChatMessages.Add(message);

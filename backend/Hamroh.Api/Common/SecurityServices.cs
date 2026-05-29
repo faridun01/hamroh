@@ -15,6 +15,12 @@ public sealed class PasswordHasher
 
 public sealed class TokenService(IConfiguration config)
 {
+    public string HashRefreshToken(string refreshToken)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        return Convert.ToBase64String(bytes);
+    }
+
     public AuthTokens CreateTokens(User user)
     {
         var secret = config["Jwt:Secret"] ?? throw new InvalidOperationException("Missing Jwt:Secret.");

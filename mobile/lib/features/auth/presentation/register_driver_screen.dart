@@ -14,6 +14,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
   final firstName = TextEditingController();
   final lastName = TextEditingController();
   final phone = TextEditingController(text: '+992');
+  final otpCode = TextEditingController();
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
   final licenseNumber = TextEditingController();
@@ -30,7 +31,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
 
   @override
   void dispose() {
-    for (final controller in [firstName, lastName, phone, password, confirmPassword, licenseNumber, carBrand, carModel, carColor, carYear, plateNumber]) {
+    for (final controller in [firstName, lastName, phone, otpCode, password, confirmPassword, licenseNumber, carBrand, carModel, carColor, carYear, plateNumber]) {
       controller.dispose();
     }
     super.dispose();
@@ -63,6 +64,19 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
             TextField(controller: lastName, decoration: const InputDecoration(labelText: 'Фамилия')),
             const SizedBox(height: 12),
             TextField(controller: phone, onChanged: _keepCountryCode, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Телефон')),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(controller: otpCode, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'SMS код')),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton(
+                  onPressed: loading ? null : _sendOtp,
+                  child: const Text('Код'),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             TextField(controller: password, obscureText: true, decoration: const InputDecoration(labelText: 'Пароль')),
             const SizedBox(height: 12),
@@ -131,7 +145,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
       return;
     }
 
-    if (firstName.text.trim().isEmpty || lastName.text.trim().isEmpty || licenseNumber.text.trim().isEmpty || plateNumber.text.trim().isEmpty) {
+    if (firstName.text.trim().isEmpty || lastName.text.trim().isEmpty || otpCode.text.trim().isEmpty || licenseNumber.text.trim().isEmpty || plateNumber.text.trim().isEmpty) {
       setState(() => error = 'Заполните обязательные поля водителя.');
       return;
     }
@@ -157,6 +171,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
             carColor: carColor.text.trim(),
             carYear: int.tryParse(carYear.text) ?? DateTime.now().year,
             seats: seats,
+            otpCode: otpCode.text.trim(),
           );
       if (mounted) {
         setState(() => success = 'Ваш профиль водителя отправлен на проверку.');
@@ -166,6 +181,23 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
       }
     } catch (_) {
       if (mounted) setState(() => error = 'Не удалось отправить профиль. Проверьте данные.');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _sendOtp() async {
+    setState(() {
+      loading = true;
+      error = null;
+      success = null;
+    });
+
+    try {
+      await ref.read(authRepositoryProvider).sendOtp(phone: phone.text.trim());
+      if (mounted) setState(() => success = 'SMS код отправлен.');
+    } catch (_) {
+      if (mounted) setState(() => error = 'Не удалось отправить SMS код.');
     } finally {
       if (mounted) setState(() => loading = false);
     }

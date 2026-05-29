@@ -27,23 +27,34 @@ public static class PenaltyEndpoints
 
     private static async Task<IResult> Pay(Guid penaltyId, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
     {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
         var penalty = await db.Penalties.SingleOrDefaultAsync(x => x.Id == penaltyId && x.PassengerId == currentUser.UserId, ct);
         if (penalty is null)
         {
             return Results.NotFound(ApiResponse<object>.Fail("Penalty not found"));
         }
 
-        penalty.IsPaid = true;
-        db.Payments.Add(new Domain.Payment
+        if (penalty.IsPaid)
         {
-            UserId = currentUser.UserId,
-            PenaltyId = penalty.Id,
-            Amount = penalty.Amount,
-            Status = "Paid",
-            Provider = "ManualMvp"
-        });
+            return Results.Ok(ApiResponse<object>.Ok(new { penalty.Id, penalty.IsPaid }));
+        }
+
+        penalty.IsPaid = true;
+        var paymentExists = await db.Payments.AnyAsync(x => x.PenaltyId == penalty.Id && x.UserId == currentUser.UserId, ct);
+        if (!paymentExists)
+        {
+            db.Payments.Add(new Domain.Payment
+            {
+                UserId = currentUser.UserId,
+                PenaltyId = penalty.Id,
+                Amount = penalty.Amount,
+                Status = "Paid",
+                Provider = "ManualMvp"
+            });
+        }
 
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return Results.Ok(ApiResponse<object>.Ok(new { penalty.Id, penalty.IsPaid }));
     }
 }
