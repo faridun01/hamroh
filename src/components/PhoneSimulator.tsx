@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -279,6 +279,7 @@ export default function PhoneSimulator({
   const [toast, setToast] = useState('');
   const [hiddenNotificationIds, setHiddenNotificationIds] = useState<string[]>([]);
   const [hiddenChatUserIds, setHiddenChatUserIds] = useState<string[]>([]);
+  const chatInputRef = useRef<HTMLInputElement | null>(null);
 
   const [authPhone, setAuthPhone] = useState('+992');
   const [authPassword, setAuthPassword] = useState('');
@@ -363,7 +364,9 @@ export default function PhoneSimulator({
 
   const t = localizedCopy[currentUser?.language || language] || localizedCopy[Language.RU];
   const selectedTrip = trips.find(trip => trip.id === selectedTripId);
-  const myNotifications = notifications.filter(item => item.userId === currentUser?.id && !hiddenNotificationIds.includes(item.id));
+  const myNotifications = notifications
+    .filter(item => item.userId === currentUser?.id && !hiddenNotificationIds.includes(item.id))
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const unreadNotificationsCount = myNotifications.filter(item => !item.isRead).length;
 
   useEffect(() => {
@@ -729,6 +732,31 @@ export default function PhoneSimulator({
     show('Бронь отменена без штрафа');
   };
 
+  const cancelBookingByDriver = (booking: Booking) => {
+    const trip = trips.find(item => item.id === booking.tripId);
+    if (!trip || trip.driverId !== currentUser?.id) return;
+    if (booking.status !== BookingStatus.Accepted && booking.status !== BookingStatus.Pending) return;
+    setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, status: BookingStatus.CancelledByDriver } : item));
+    if (booking.status === BookingStatus.Accepted) {
+      setTrips(prev => prev.map(item => item.id === booking.tripId ? { ...item, availableSeats: item.availableSeats + booking.seatsCount, status: TripStatus.Published } : item));
+    }
+    setNotifications(prev => [
+      {
+        id: `notif_${Date.now()}`,
+        userId: booking.passengerId,
+        title: 'Водитель отменил бронь',
+        message: 'Бронь отменена: стороны не договорились по деталям поездки.',
+        type: 'booking_cancelled_by_driver',
+        tripId: booking.tripId,
+        bookingId: booking.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      },
+      ...prev
+    ]);
+    show('Бронь отменена');
+  };
+
   const acceptBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
     if (!trip || trip.availableSeats < booking.seatsCount) return show('Недостаточно свободных мест');
@@ -842,6 +870,34 @@ export default function PhoneSimulator({
       })),
       ...prev
     ]);
+  };
+
+  const cancelTrip = (tripId: string) => {
+    const tripBookings = bookings.filter(booking =>
+      booking.tripId === tripId &&
+      [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)
+    );
+    setTrips(prev => prev.map(trip => trip.id === tripId ? { ...trip, status: TripStatus.Cancelled } : trip));
+    setBookings(prev => prev.map(booking =>
+      booking.tripId === tripId && [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)
+        ? { ...booking, status: BookingStatus.CancelledByDriver }
+        : booking
+    ));
+    setNotifications(prev => [
+      ...tripBookings.map(booking => ({
+        id: `notif_${Date.now()}_${booking.id}`,
+        userId: booking.passengerId,
+        title: 'Поездка отменена',
+        message: 'Водитель отменил поездку. Вы можете найти другую поездку или создать заявку.',
+        type: 'trip_cancelled_by_driver',
+        tripId,
+        bookingId: booking.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      })),
+      ...prev
+    ]);
+    show('Поездка отменена');
   };
 
   const publishTrip = () => {
@@ -1070,7 +1126,7 @@ export default function PhoneSimulator({
     const targetUserId = recipientId || chatUserId;
     if (!targetUserId || !chatInput.trim() || !currentUser) return;
     setChatUserId(targetUserId);
-    setChats(prev => ({ ...prev, [targetUserId]: [...(prev[targetUserId] || []), chatInput.trim()] }));
+    setChats(prev => ({ ...prev, [targetUserId]: [chatInput.trim(), ...(prev[targetUserId] || [])] }));
     setNotifications(prev => [
       {
         id: `notif_${Date.now()}`,
@@ -1085,6 +1141,7 @@ export default function PhoneSimulator({
       ...prev
     ]);
     setChatInput('');
+    requestAnimationFrame(() => chatInputRef.current?.focus());
   };
 
   const selectClass = 'w-full h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] px-3 text-sm font-semibold text-[#0F172A] outline-none focus:border-[#10B981]';
@@ -1199,6 +1256,7 @@ export default function PhoneSimulator({
       ['home', Compass, t.driverHome],
       ['requests', Users, t.requests],
       ['trips', Calendar, t.trips],
+      ['messages', MessageSquare, t.messages],
       ['notifications', Bell, t.notifications],
       ['profile', UserIcon, t.profile]
     ] as const;
@@ -1472,8 +1530,10 @@ export default function PhoneSimulator({
           {myTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-6 text-center">{view === 'active' ? 'Актуальных поездок пока нет' : 'Завершённых поездок пока нет'}</p>}
           {myTrips.map(trip => {
             const tripBookings = bookings.filter(booking => booking.tripId === trip.id);
-            const acceptedSeats = tripBookings.filter(booking => booking.status === BookingStatus.Accepted).reduce((sum, booking) => sum + booking.seatsCount, 0);
+            const acceptedTripBookings = tripBookings.filter(booking => booking.status === BookingStatus.Accepted);
+            const acceptedSeats = acceptedTripBookings.reduce((sum, booking) => sum + booking.seatsCount, 0);
             const pendingCount = tripBookings.filter(booking => booking.status === BookingStatus.Pending).length;
+            const bookedSeats = trip.totalSeats - trip.availableSeats;
             return (
               <div key={trip.id} className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
                 <div className="flex justify-between gap-3">
@@ -1495,7 +1555,8 @@ export default function PhoneSimulator({
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-3">
                     <p className="text-[11px] text-[#64748B]">Брони</p>
-                    <p className="font-black">{acceptedSeats}/{pendingCount}</p>
+                    <p className="font-black">{bookedSeats}/{trip.totalSeats}</p>
+                    <p className="text-[10px] font-bold text-[#64748B]">мест занято</p>
                   </div>
                 </div>
                 {view === 'active' && tripBookings.length > 0 && (
@@ -1503,10 +1564,59 @@ export default function PhoneSimulator({
                     <p className="text-xs font-black text-[#047857]">Live: {pendingCount} новых броней, {acceptedSeats} подтверждённых мест</p>
                   </div>
                 )}
+                {view === 'active' && acceptedTripBookings.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-black text-[#64748B]">Пассажиры этого рейса</p>
+                    {acceptedTripBookings.map(booking => {
+                      const passenger = userFor(booking.passengerId);
+                      return (
+                        <div key={booking.id} className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <img src={passenger?.avatarUrl} className="w-11 h-11 rounded-2xl object-cover" alt="" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-black text-sm truncate">{passenger?.fullName}</p>
+                              <p className="text-xs text-[#64748B]">{booking.seatsCount} мест(а) · {money(booking.totalPrice)}</p>
+                              <p className="text-xs font-bold text-[#047857]">{passenger?.phone}</p>
+                            </div>
+                            <span className="h-7 px-2 rounded-full bg-[#D1FAE5] text-[#047857] text-[11px] font-black flex items-center">Принято</span>
+                          </div>
+                          <p className="text-xs font-bold text-[#64748B]">
+                            Пассажир: {booking.passengerFinalConfirmedAt ? 'точно едет' : 'ожидается'} · Водитель: {booking.driverFinalConfirmedAt ? 'точно едет' : 'ожидается'}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => {
+                                setChatUserId(passenger?.id || '');
+                                setHiddenChatUserIds(prev => prev.filter(id => id !== passenger?.id));
+                                setDriverTab('messages');
+                              }}
+                              className="h-11 rounded-2xl bg-[#D1FAE5] text-[#047857] font-black"
+                            >
+                              Чат
+                            </button>
+                            <a href={`tel:${passenger?.phone}`} className="h-11 rounded-2xl bg-[#10B981] text-white font-black flex items-center justify-center">
+                              Позвонить
+                            </a>
+                          </div>
+                          {!booking.driverFinalConfirmedAt && (
+                            <div className="grid grid-cols-2 gap-2">
+                              <button onClick={() => cancelBookingByDriver(booking)} className="h-11 rounded-2xl bg-white border border-amber-200 text-amber-800 font-black">
+                                Отменить
+                              </button>
+                              <button onClick={() => confirmDriverRide(booking)} className="h-11 rounded-2xl bg-[#047857] text-white font-black">
+                                Точно еду
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {view === 'active' && (
-                  <div className={editingTripId ? 'grid grid-cols-2 gap-3' : ''}>
-                    <button onClick={() => editDriverTrip(trip)} className="h-12 rounded-2xl bg-[#D1FAE5] text-[#047857] font-black">Изменить</button>
-                    <button onClick={() => completeTrip(trip.id)} className="h-12 rounded-2xl bg-[#0F172A] text-white font-black">Завершить</button>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button onClick={() => cancelTrip(trip.id)} className="h-12 rounded-2xl bg-white border border-rose-200 text-rose-700 font-black shadow-sm active:scale-[0.98] transition-all">Отменить</button>
+                    <button onClick={() => completeTrip(trip.id)} className="h-12 rounded-2xl bg-[#0F172A] text-white font-black shadow-sm active:scale-[0.98] transition-all">Завершить</button>
                   </div>
                 )}
               </div>
@@ -1545,7 +1655,7 @@ export default function PhoneSimulator({
           const isPending = booking.status === BookingStatus.Pending;
           const isCompleted = booking.status === BookingStatus.Completed || trip?.status === TripStatus.Completed;
           const canChat = isAccepted && !isCompleted;
-          const canCancel = mode === 'passenger' && (isPending || isCancelWindowOpen(booking));
+          const canCancel = mode === 'passenger' && (isPending || (canChat && !booking.passengerFinalConfirmedAt));
           const passengerAgreed = isPassengerAgreed(booking);
           const canFinalConfirm = mode === 'passenger' && canChat && canCancel && !booking.passengerFinalConfirmedAt;
           const peer = mode === 'passenger' ? driver : passenger;
@@ -1584,7 +1694,17 @@ export default function PhoneSimulator({
               {mode === 'passenger' && isCompleted && <button onClick={() => setScreen('review')} className={primaryClass}>Оценить поездку</button>}
               {canChat && (
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => { setChatUserId(peer?.id || ''); setPassengerTab('messages'); }} className="h-12 rounded-2xl bg-[#D1FAE5] text-[#047857] font-black">Чат</button>
+                  <button
+                    onClick={() => {
+                      setChatUserId(peer?.id || '');
+                      setHiddenChatUserIds(prev => prev.filter(id => id !== peer?.id));
+                      if (mode === 'passenger') setPassengerTab('messages');
+                      else setDriverTab('messages');
+                    }}
+                    className="h-12 rounded-2xl bg-[#D1FAE5] text-[#047857] font-black"
+                  >
+                    Чат
+                  </button>
                   <a href={`tel:${peer?.phone}`} className="h-12 rounded-2xl bg-[#10B981] text-white font-black flex items-center justify-center">Позвонить</a>
                 </div>
               )}
@@ -1635,7 +1755,16 @@ export default function PhoneSimulator({
                 ))}
               </div>
               <div className="flex gap-2 pt-3">
-                <input value={chatInput} onChange={event => setChatInput(event.target.value)} className="flex-1 h-11 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] px-3 text-sm outline-none" placeholder="Сообщение" />
+                <input
+                  ref={chatInputRef}
+                  value={chatInput}
+                  onChange={event => setChatInput(event.target.value)}
+                  onBlur={() => {
+                    if (chatInput) requestAnimationFrame(() => chatInputRef.current?.focus());
+                  }}
+                  className="flex-1 h-11 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] px-3 text-sm outline-none"
+                  placeholder="Сообщение"
+                />
                 <button onClick={() => sendChat(activePeer?.id)} className="w-11 h-11 rounded-2xl bg-[#10B981] text-white flex items-center justify-center"><Send className="w-5 h-5" /></button>
               </div>
             </div>
@@ -1703,7 +1832,7 @@ export default function PhoneSimulator({
     const activeEarnings = driverBookings
       .filter(booking => booking.status === BookingStatus.Accepted)
       .reduce((sum, booking) => sum + booking.totalPrice, 0);
-    const totalEarnings = completedEarnings + activeEarnings;
+    const totalEarnings = completedEarnings;
     const passengerBookings = bookings.filter(booking => booking.passengerId === currentUser?.id);
     const passengerCompleted = passengerBookings.filter(booking => booking.status === BookingStatus.Completed).length;
     const passengerActive = passengerBookings.filter(booking => [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)).length;
@@ -1767,6 +1896,7 @@ export default function PhoneSimulator({
                 </div>
               </div>
               <p className="text-xs text-[#64748B]">Завершено: {money(completedEarnings)}</p>
+              <p className="text-xs text-[#64748B]">Активные брони попадут в заработок только после завершения поездки.</p>
             </div>
             <p className="font-black">Статус проверки</p>
             <p className="text-sm text-[#64748B]">{profile?.verificationStatus || VerificationStatus.PendingVerification}</p>
@@ -1991,6 +2121,7 @@ export default function PhoneSimulator({
               </button>
             </div>
           )}
+          {driverTab === 'messages' && <Messages />}
           {driverTab === 'notifications' && <Notifications />}
           {driverTab === 'profile' && <Profile role="driver" />}
         </div>
