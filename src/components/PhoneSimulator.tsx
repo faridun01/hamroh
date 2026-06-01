@@ -7,25 +7,19 @@ import {
   Car,
   Check,
   CheckCircle,
-  ChevronRight,
   Clock,
   Compass,
   CreditCard,
-  Globe2,
   Home,
   Lock,
-  LogOut,
   MapPin,
   MessageSquare,
   Phone,
   PlusCircle,
-  Search,
   Send,
   Share2,
   ShieldCheck,
   Star,
-  User as UserIcon,
-  Users
 } from 'lucide-react';
 import {
   Booking,
@@ -46,6 +40,13 @@ import {
   VerificationStatus,
   PassengerRequest
 } from '../types';
+import { RequestCard as PassengerRequestCard, TripCard as RideTripCard } from './phoneSimulator/PhoneSimulatorCards';
+import { PhoneDeviceFrame } from './phoneSimulator/PhoneDeviceFrame';
+import { localizedCopy, today, type Screen } from './phoneSimulator/phoneSimulatorCopy';
+import { BottomNav, CitySelect, HamrohLogo, PhoneHeader as Header, PhoneShell as Shell } from './phoneSimulator/PhoneSimulatorLayout';
+import { MessagesPanel, NotificationsPanel, ProfilePanel } from './phoneSimulator/PhoneSimulatorPanels';
+import { displayPriceForTrip, formatDuration, money, rowPriceForTrip, seatRowsForSeats, timeToMinutes } from './phoneSimulator/phoneSimulatorUtils';
+import AuthScreens from './phoneSimulator/screens/AuthScreens';
 
 interface PhoneSimulatorProps {
   users: User[];
@@ -76,289 +77,6 @@ interface PhoneSimulatorProps {
   setCurrentUser: (u: User | null) => void;
 }
 
-type Screen =
-  | 'lang'
-  | 'welcome'
-  | 'login'
-  | 'forgot'
-  | 'role'
-  | 'register'
-  | 'passenger'
-  | 'driver'
-  | 'results'
-  | 'trip'
-  | 'booking'
-  | 'request'
-  | 'review';
-
-const copy = {
-  [Language.RU]: {
-    welcome: 'Надежные поездки между городами Таджикистана',
-    login: 'Войти',
-    register: 'Зарегистрироваться',
-    search: 'Поиск',
-    trips: 'Поездки',
-    messages: 'Сообщения',
-    notifications: 'Уведомления',
-    profile: 'Профиль'
-  },
-  [Language.TJ]: {
-    welcome: 'Сафарҳои боэътимод байни шаҳрҳои Тоҷикистон',
-    login: 'Ворид шудан',
-    register: 'Руйхатгирӣ',
-    search: 'Ҷустуҷӯ',
-    trips: 'Сафарҳо',
-    messages: 'Паёмҳо',
-    notifications: 'Огоҳӣ',
-    profile: 'Профил'
-  },
-  [Language.EN]: {
-    welcome: 'Reliable rides between cities in Tajikistan',
-    login: 'Log in',
-    register: 'Register',
-    search: 'Search',
-    trips: 'My rides',
-    messages: 'Messages',
-    notifications: 'Alerts',
-    profile: 'Profile'
-  }
-};
-
-const money = (value: number) => `${value} сомони`;
-const today = '2026-05-25';
-
-const localizedCopy = {
-  [Language.RU]: {
-    languageName: 'Русский',
-    welcomeTitle: 'Добро пожаловать в Hamroh',
-    welcome: 'Надёжные поездки между городами Таджикистана',
-    login: 'Войти',
-    register: 'Зарегистрироваться',
-    forgotPassword: 'Забыли пароль?',
-    recoverPassword: 'Восстановить пароль',
-    resetPasswordTitle: 'Восстановление пароля',
-    resetPasswordHint: 'Введите номер телефона, код подтверждения и новый пароль. В демо код: 7171.',
-    verificationCode: 'Код подтверждения',
-    newPassword: 'Новый пароль',
-    savePassword: 'Сохранить пароль',
-    password: 'Пароль',
-    repeatPassword: 'Повтор',
-    firstName: 'Имя',
-    lastName: 'Фамилия',
-    roleChoice: 'Кем вы хотите пользоваться Hamroh?',
-    passengerRole: 'Я пассажир',
-    passengerRoleDescription: 'Быстрая регистрация без проверки администратора',
-    driverRole: 'Я водитель',
-    driverRoleDescription: 'Понадобятся документы и проверка модератором',
-    passengerRegister: 'Регистрация пассажира',
-    driverRegister: 'Регистрация водителя',
-    male: 'Мужчина',
-    female: 'Женщина',
-    search: 'Поиск',
-    trips: 'Поездки',
-    messages: 'Сообщения',
-    notifications: 'Уведомления',
-    profile: 'Профиль',
-    driverHome: 'Главная',
-    create: 'Создать',
-    requests: 'Заявки',
-    welcomeBack: 'Добро пожаловать',
-    from: 'Откуда',
-    to: 'Куда',
-    date: 'Дата',
-    passengers: 'Пассажиры',
-    verified: 'Проверен',
-    baggage: 'Багаж',
-    woman: 'Женщина',
-    findRide: 'Найти поездку',
-    addressRide: 'Мне нужна поездка от адреса',
-    active: 'Активные',
-    completed: 'Завершенные',
-    noActiveTrips: 'Актуальных поездок пока нет',
-    noCompletedTrips: 'Завершенных поездок пока нет',
-    newCount: 'новых',
-    noNotifications: 'Уведомлений пока нет',
-    tapToOpen: 'Нажмите, чтобы открыть',
-    deleteNotification: 'Удалить уведомление',
-    accept: 'Принять',
-    reject: 'Отклонить',
-    market: 'Рынок поездок',
-    noTripsFromCity: 'Пока нет поездок из этого города',
-    exactTime: 'Точное время',
-    whenFull: 'По наполнении',
-    price: 'Цена',
-    seats: 'Мест',
-    onePrice: 'Одна цена',
-    byRows: 'По рядам',
-    pickupAddress: 'Точный адрес посадки',
-    dropoffPoint: 'Точка высадки',
-    driverComment: 'Комментарий водителя',
-    publishRide: 'Опубликовать поездку',
-    foundTrips: 'Найдено поездок',
-    noTripsFound: 'Поездок не найдено. Измените дату, маршрут или количество мест.',
-    fastest: 'Быстрее всех',
-    seatsShort: 'мест',
-    driver: 'Водитель',
-    tripsWord: 'поездки',
-    save: 'Сохранить',
-    cancel: 'Отмена',
-    close: 'Закрыть'
-  },
-  [Language.TJ]: {
-    languageName: 'Тоҷикӣ',
-    chooseLanguage: 'Забони барномаро интихоб кунед',
-    welcomeTitle: 'Хуш омадед ба Hamroh',
-    welcome: 'Сафарҳои боэътимод байни шаҳрҳои Тоҷикистон',
-    login: 'Ворид шудан',
-    register: 'Рӯйхатгирӣ',
-    forgotPassword: 'Паролро фаромӯш кардед?',
-    recoverPassword: 'Барқарор кардани парол',
-    resetPasswordTitle: 'Барқарорсозии парол',
-    resetPasswordHint: 'Рақами телефон, рамзи тасдиқ ва пароли навро ворид кунед. Дар демо рамз: 7171.',
-    verificationCode: 'Рамзи тасдиқ',
-    newPassword: 'Пароли нав',
-    savePassword: 'Нигоҳ доштани парол',
-    password: 'Парол',
-    repeatPassword: 'Такрор',
-    firstName: 'Ном',
-    lastName: 'Насаб',
-    roleChoice: 'Hamroh-ро чӣ гуна истифода мебаред?',
-    passengerRole: 'Ман мусофир',
-    passengerRoleDescription: 'Рӯйхатгирии зуд бе санҷиши маъмур',
-    driverRole: 'Ман ронанда',
-    driverRoleDescription: 'Ҳуҷҷатҳо ва санҷиши модератор лозим мешаванд',
-    passengerRegister: 'Рӯйхатгирии мусофир',
-    driverRegister: 'Рӯйхатгирии ронанда',
-    male: 'Мард',
-    female: 'Зан',
-    search: 'Ҷустуҷӯ',
-    trips: 'Сафарҳои ман',
-    messages: 'Паёмҳо',
-    notifications: 'Огоҳиҳо',
-    profile: 'Профил',
-    driverHome: 'Асосӣ',
-    create: 'Сохтан',
-    requests: 'Дархостҳо',
-    welcomeBack: 'Хуш омадед',
-    from: 'Аз куҷо',
-    to: 'Ба куҷо',
-    date: 'Сана',
-    passengers: 'Мусофирон',
-    verified: 'Санҷида',
-    baggage: 'Бор',
-    woman: 'Зан',
-    findRide: 'Ҷустуҷӯи сафар',
-    addressRide: 'Ба ман сафар аз суроға лозим аст',
-    active: 'Фаъол',
-    completed: 'Анҷомшуда',
-    noActiveTrips: 'Ҳоло сафари фаъол нест',
-    noCompletedTrips: 'Ҳоло сафари анҷомшуда нест',
-    newCount: 'нав',
-    noNotifications: 'Ҳоло огоҳӣ нест',
-    tapToOpen: 'Барои кушодан зер кунед',
-    deleteNotification: 'Огоҳиро нест кардан',
-    accept: 'Қабул',
-    reject: 'Рад',
-    market: 'Бозори сафарҳо',
-    noTripsFromCity: 'Ҳоло аз ин шаҳр сафар нест',
-    exactTime: 'Вақти дақиқ',
-    whenFull: 'Ҳангоми пур шудан',
-    price: 'Нарх',
-    seats: 'Ҷой',
-    onePrice: 'Як нарх',
-    byRows: 'Аз рӯи қатор',
-    pickupAddress: 'Суроғаи дақиқи нишаст',
-    dropoffPoint: 'Ҷои фаромадан',
-    driverComment: 'Шарҳи ронанда',
-    publishRide: 'Нашри сафар',
-    foundTrips: 'Сафарҳои ёфтшуда',
-    noTripsFound: 'Сафар ёфт нашуд. Сана, масир ё шумораи ҷойҳоро тағйир диҳед.',
-    fastest: 'Зудтарин',
-    seatsShort: 'ҷой',
-    driver: 'Ронанда',
-    tripsWord: 'сафар',
-    save: 'Нигоҳ доштан',
-    cancel: 'Бекор',
-    close: 'Пӯшидан'
-  },
-  [Language.EN]: {
-    languageName: 'English',
-    chooseLanguage: 'Choose app language',
-    welcomeTitle: 'Welcome to Hamroh',
-    welcome: 'Reliable rides between cities in Tajikistan',
-    login: 'Log in',
-    register: 'Register',
-    forgotPassword: 'Forgot password?',
-    recoverPassword: 'Recover password',
-    resetPasswordTitle: 'Password recovery',
-    resetPasswordHint: 'Enter your phone number, verification code, and a new password. Demo code: 7171.',
-    verificationCode: 'Verification code',
-    newPassword: 'New password',
-    savePassword: 'Save password',
-    password: 'Password',
-    repeatPassword: 'Repeat',
-    firstName: 'First name',
-    lastName: 'Last name',
-    roleChoice: 'How do you want to use Hamroh?',
-    passengerRole: 'I am a passenger',
-    passengerRoleDescription: 'Fast registration without admin approval',
-    driverRole: 'I am a driver',
-    driverRoleDescription: 'Documents and moderator verification are required',
-    passengerRegister: 'Passenger registration',
-    driverRegister: 'Driver registration',
-    male: 'Male',
-    female: 'Female',
-    search: 'Search',
-    trips: 'My rides',
-    messages: 'Messages',
-    notifications: 'Alerts',
-    profile: 'Profile',
-    driverHome: 'Home',
-    create: 'Create',
-    requests: 'Requests',
-    welcomeBack: 'Welcome',
-    from: 'From',
-    to: 'To',
-    date: 'Date',
-    passengers: 'Passengers',
-    verified: 'Verified',
-    baggage: 'Baggage',
-    woman: 'Woman',
-    findRide: 'Find a ride',
-    addressRide: 'I need a ride from an address',
-    active: 'Active',
-    completed: 'Completed',
-    noActiveTrips: 'No active rides yet',
-    noCompletedTrips: 'No completed rides yet',
-    newCount: 'new',
-    noNotifications: 'No notifications yet',
-    tapToOpen: 'Tap to open',
-    deleteNotification: 'Delete notification',
-    accept: 'Accept',
-    reject: 'Reject',
-    market: 'Ride market',
-    noTripsFromCity: 'No rides from this city yet',
-    exactTime: 'Exact time',
-    whenFull: 'When full',
-    price: 'Price',
-    seats: 'Seats',
-    onePrice: 'One price',
-    byRows: 'By rows',
-    pickupAddress: 'Exact pickup address',
-    dropoffPoint: 'Dropoff point',
-    driverComment: 'Driver comment',
-    publishRide: 'Publish ride',
-    foundTrips: 'Rides found',
-    noTripsFound: 'No rides found. Change date, route, or seats.',
-    fastest: 'Fastest',
-    seatsShort: 'seats',
-    driver: 'Driver',
-    tripsWord: 'rides',
-    save: 'Save',
-    cancel: 'Cancel',
-    close: 'Close'
-  }
-};
 
 export default function PhoneSimulator({
   users,
@@ -409,7 +127,6 @@ export default function PhoneSimulator({
   const [driverHomeView, setDriverHomeView] = useState<'trips' | 'requests'>('trips');
   const [driverRouteTo, setDriverRouteTo] = useState('Худжанд');
   const [driverFilterTo, setDriverFilterTo] = useState('');
-  const [driverMaxPrice, setDriverMaxPrice] = useState('');
   const [selectedTripId, setSelectedTripId] = useState('');
   const [tripBackTarget, setTripBackTarget] = useState<'results' | 'passenger' | 'driver'>('results');
   const [editingTripId, setEditingTripId] = useState('');
@@ -629,18 +346,6 @@ export default function PhoneSimulator({
   const vehicleFor = (driverId?: string) => vehicles.find(vehicle => vehicle.driverId === driverId);
   const userFor = (id?: string) => users.find(user => user.id === id);
   const isVerifiedDriver = (driverId?: string) => driverProfileFor(driverId)?.verificationStatus === VerificationStatus.Verified;
-  const timeToMinutes = (value?: string) => {
-    if (!value || value === 'По наполнении') return 9999;
-    const [hours = '0', minutes = '0'] = (value || '00:00').split(':');
-    return Number(hours) * 60 + Number(minutes);
-  };
-  const formatDuration = (trip?: Trip) => {
-    if (!trip) return '4ч 30мин';
-    const routeHours = trip.fromCity === 'Душанбе' && trip.toCity === 'Худжанд' ? 4 : 5;
-    const extraMinutes = trip.pricePerSeat > 140 ? -15 : trip.pricePerSeat < 110 ? 25 : 0;
-    const total = Math.max(180, routeHours * 60 + 30 + extraMinutes);
-    return `${Math.floor(total / 60)}ч ${total % 60}мин`;
-  };
   const isCancelWindowOpen = (booking: Booking) => {
     if (booking.status !== BookingStatus.Accepted) return false;
     const deadline = booking.cancellationDeadlineAt ? new Date(booking.cancellationDeadlineAt).getTime() : 0;
@@ -652,28 +357,6 @@ export default function PhoneSimulator({
     const deadline = booking.cancellationDeadlineAt ? new Date(booking.cancellationDeadlineAt).getTime() : 0;
     if (!deadline) return true;
     return deadline > 0 && deadline <= Date.now();
-  };
-  const seatRowsForSeats = (seats: number): Array<{ key: 'front' | 'second' | 'third'; label: string; seats: number }> => {
-    const rows: Array<{ key: 'front' | 'second' | 'third'; label: string; seats: number }> = [
-      { key: 'front' as const, label: 'Рядом с водителем', seats: 1 },
-      { key: 'second' as const, label: 'Второй ряд', seats: Math.min(3, Math.max(1, seats - 1)) }
-    ];
-    if (seats > 4) rows.push({ key: 'third' as const, label: 'Третий ряд', seats: seats - 4 });
-    return rows;
-  };
-  const rowPriceForTrip = (trip: Trip, row: 'front' | 'second' | 'third') => {
-    if (trip.pricingMode !== 'row') return trip.pricePerSeat;
-    if (row === 'front') return trip.frontSeatPrice ?? trip.pricePerSeat;
-    if (row === 'third') return trip.thirdRowPrice ?? trip.pricePerSeat;
-    return trip.secondRowPrice ?? trip.pricePerSeat;
-  };
-  const displayPriceForTrip = (trip: Trip) => {
-    if (trip.pricingMode !== 'row') return trip.pricePerSeat;
-    return Math.min(
-      trip.frontSeatPrice ?? trip.pricePerSeat,
-      trip.secondRowPrice ?? trip.pricePerSeat,
-      trip.thirdRowPrice ?? trip.pricePerSeat
-    );
   };
   const tripGenderCounts = (tripId: string) => {
     const accepted = bookings.filter(booking => booking.tripId === tripId && booking.status === BookingStatus.Accepted);
@@ -1348,342 +1031,53 @@ export default function PhoneSimulator({
   const inputClass = 'w-full h-12 rounded-2xl bg-white border border-[#E2E8F0] px-3 text-sm font-semibold text-[#0F172A] outline-none focus:border-[#10B981]';
   const primaryClass = 'w-full h-14 rounded-2xl bg-[#10B981] text-white font-extrabold text-sm shadow-sm active:scale-[0.98] transition-all disabled:bg-slate-200 disabled:text-slate-400';
 
-  const Shell = useMemo(() => function StableShell({ children }: { children: React.ReactNode }) {
+  const renderTripCard = (trip: Trip) => {
+    const shownPrice = displayPriceForTrip(trip);
+    const duration = formatDuration(trip);
     return (
-      <div className="flex flex-col h-full bg-[#F8FAFC] text-[#0F172A]">
-        {children}
-      </div>
+      <RideTripCard
+        key={trip.id}
+        trip={trip}
+        driver={userFor(trip.driverId)}
+        profile={driverProfileFor(trip.driverId)}
+        vehicle={vehicleFor(trip.driverId)}
+        shownPrice={shownPrice}
+        duration={duration}
+        isVerified={isVerifiedDriver(trip.driverId)}
+        isFastest={shownPrice >= 150 || duration.startsWith('3')}
+        onOpen={() => {
+          setSelectedTripId(trip.id);
+          setSelectedSeats(Math.min(searchSeats, trip.availableSeats));
+          setTripBackTarget(screen === 'results' ? 'results' : currentUser?.role === UserRole.Driver ? 'driver' : 'passenger');
+          setScreen('trip');
+        }}
+        labels={t}
+      />
     );
-  }, []);
-
-  const Header = useMemo(() => function StableHeader({ title, back }: { title: string; back?: () => void }) {
-    return (
-      <div className="px-4 py-3 bg-white border-b border-[#E2E8F0] flex items-center gap-3 shrink-0">
-        {back && (
-          <button onClick={back} className="w-10 h-10 rounded-full bg-[#F8FAFC] flex items-center justify-center">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        )}
-        <div className="min-w-0">
-          <h2 className="text-lg font-black truncate">{title}</h2>
-          <p className="text-xs text-[#64748B]">Hamroh</p>
-        </div>
-      </div>
-    );
-  }, []);
-
-  const HamrohLogo = useMemo(() => function StableHamrohLogo({ compact = false }: { compact?: boolean }) {
-    const width = compact ? 'w-[86px]' : 'w-[108px]';
-    const height = compact ? 'h-[76px]' : 'h-[96px]';
-    return (
-      <div className={`relative ${width} ${height}`}>
-        <div className="absolute left-2.5 top-2 h-18 w-6.25 rounded-full bg-[#059669]" />
-        <div className="absolute right-2.5 top-2 h-18 w-6.25 rounded-full bg-[#059669]" />
-        <div className="absolute left-8.75 top-11.75 h-4.75 w-10 rounded-t-full bg-[#34D399]" />
-        <div className="absolute left-9.75 top-13.25 h-4.5 w-8 rounded-t-full bg-[#047857]" />
-        <div className="absolute left-1/2 top-5.5 h-4.25 w-4.25 -translate-x-1/2 rounded-full bg-[#3B82F6]" />
-        <div className="absolute left-10.75 top-13 h-8.5 w-10.75 rotate-45 rounded-[7px] bg-white shadow-[0_10px_18px_rgba(15,23,42,0.04)]" />
-      </div>
-    );
-  }, []);
-
-  const cityLabel = (city: City) => {
-    if (language === Language.TJ) return city.nameTj || city.nameRu;
-    if (language === Language.EN) return city.nameRu;
-    return city.nameRu;
   };
 
-  const CitySelect = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
-    <select value={value} onChange={event => onChange(event.target.value)} className={selectClass}>
-      {cities.map(item => <option key={item.id} value={item.nameRu}>{cityLabel(item)}</option>)}
-    </select>
+  const renderRequestCard = (request: PassengerRequest) => (
+    <PassengerRequestCard
+      key={request.id}
+      request={request}
+      passenger={userFor(request.passengerId)}
+      primaryClass={primaryClass}
+      money={money}
+      onOffer={() => offerPassengerRequest(request)}
+    />
   );
 
-  const TripCard: React.FC<{ trip: Trip }> = ({ trip }) => {
-    const driver = userFor(trip.driverId);
-    const profile = driverProfileFor(trip.driverId);
-    const vehicle = vehicleFor(trip.driverId);
-    const shownPrice = displayPriceForTrip(trip);
-    const isFastest = shownPrice >= 150 || formatDuration(trip).startsWith('3');
-    return (
-      <button onClick={() => { setSelectedTripId(trip.id); setSelectedSeats(Math.min(searchSeats, trip.availableSeats)); setTripBackTarget(screen === 'results' ? 'results' : currentUser?.role === UserRole.Driver ? 'driver' : 'passenger'); setScreen('trip'); }} className={`relative w-full text-left bg-white rounded-[22px] border p-4 space-y-4 shadow-sm active:scale-[0.99] transition-all overflow-hidden ${isFastest ? 'border-[#047857]' : 'border-[#E2E8F0]'}`}>
-        {isFastest && <span className="absolute right-0 top-0 rounded-bl-2xl bg-[#047857] px-4 py-2 text-xs font-black text-white">{t.fastest}</span>}
-        <div className="grid grid-cols-[92px_1fr_auto] gap-3 items-start pt-3">
-          <div className="space-y-8">
-            <p className="text-2xl font-black leading-none">{trip.departureTime}</p>
-            <p className="text-sm font-black leading-none text-slate-400">{formatDuration(trip)}</p>
-          </div>
-          <div className="relative space-y-5">
-            <div className="absolute -left-4.5 top-2 h-18 border-l-2 border-dashed border-[#94A3B8]" />
-            <span className="absolute -left-5.75 top-1 w-3 h-3 rounded-full bg-[#047857]" />
-            <span className="absolute -left-5.75 top-18 w-3 h-3 rounded-full bg-[#94A3B8]" />
-            <div>
-              <p className="text-base font-bold text-[#0F172A]">{trip.fromCity}, {trip.pickupPoint}</p>
-              <p className="mt-2 text-sm font-black text-[#047857]">{formatDuration(trip)}</p>
-            </div>
-            <p className="text-base font-bold text-[#0F172A]">{trip.toCity}, {trip.dropoffPoint}</p>
-          </div>
-          <div className="text-right pr-1">
-            <p className="text-2xl font-black text-[#047857]">{shownPrice}</p>
-            <p className="text-sm font-black text-[#047857]">смн</p>
-            {trip.pricingMode === 'row' && <p className="text-[10px] font-bold text-[#64748B]">от</p>}
-            <p className={`mt-3 text-sm font-black ${trip.availableSeats <= 1 ? 'text-red-600' : 'text-[#047857]'}`}>{trip.availableSeats} {t.seatsShort}</p>
-          </div>
-        </div>
-        <div className="h-px bg-[#E2E8F0]" />
-        <div className="flex items-center gap-3">
-          <img src={driver?.avatarUrl} className="w-14 h-14 rounded-2xl object-cover" alt="" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xl font-black truncate">{driver?.fullName?.split(' ')[0] || t.driver} <span className="text-base font-bold">{profile?.rating || '4.8'}</span></p>
-            <p className="text-sm text-[#334155] truncate">{vehicle?.brand} {vehicle?.model} · {vehicle?.color}</p>
-          </div>
-          {isVerifiedDriver(trip.driverId) && <ShieldCheck className="w-7 h-7 text-[#10B981]" />}
-        </div>
-      </button>
-    );
-  };
-
-  const BottomNav = ({ role }: { role: UserRole.Passenger | UserRole.Driver }) => {
-    const passengerItems = [
-      ['search', Search, t.search],
-      ['trips', Calendar, t.trips],
-      ['messages', MessageSquare, t.messages],
-      ['notifications', Bell, t.notifications],
-      ['profile', UserIcon, t.profile]
-    ] as const;
-    const driverItems = [
-      ['home', Compass, 'Главная'],
-      ['create', PlusCircle, 'Создать'],
-      ['requests', Users, 'Заявки'],
-      ['trips', Calendar, 'Поездки'],
-      ['profile', UserIcon, 'Профиль']
-    ] as const;
-    const localizedDriverItems = [
-      ['home', Compass, t.driverHome],
-      ['requests', Users, t.requests],
-      ['trips', Calendar, t.trips],
-      ['messages', MessageSquare, t.messages],
-      ['notifications', Bell, t.notifications],
-      ['profile', UserIcon, t.profile]
-    ] as const;
-    const items = role === UserRole.Driver ? localizedDriverItems : passengerItems;
-    const active = role === UserRole.Driver ? driverTab : passengerTab;
-    const setActive = role === UserRole.Driver ? setDriverTab : setPassengerTab;
-    return (
-      <div className="h-16 bg-white border-t border-[#E2E8F0] grid shrink-0 safe-bottom-panel" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
-        {items.map(([key, Icon, label]) => (
-          <button key={key} onClick={() => setActive(key)} className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold ${active === key ? 'text-[#047857]' : 'text-[#64748B]'}`}>
-            <span className="relative">
-              <Icon className="w-5 h-5" />
-              {key === 'notifications' && unreadNotificationsCount > 0 && (
-                <span className="absolute -top-2 -right-3 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center">{unreadNotificationsCount}</span>
-              )}
-            </span>
-            <span>{label}</span>
-          </button>
-        ))}
-      </div>
-    );
-  };
-
-  const AuthScreens = () => {
-    if (screen === 'lang') {
-      return (
-        <Shell>
-          <div className="flex-1 flex flex-col justify-center p-6 gap-8 bg-[#F8FAFC] text-center">
-            <div className="flex flex-col items-center">
-              <div className="mb-6 flex justify-center">
-                <HamrohLogo compact />
-              </div>
-              <h1 className="text-4xl font-black tracking-tight text-[#0F172A]">Hamroh</h1>
-            </div>
-            {([['Тоҷикӣ', Language.TJ], ['Русский', Language.RU], ['English', Language.EN]] as const).map(([label, lang]) => (
-              <button key={lang} onClick={() => { setLanguage(lang); setScreen('welcome'); }} className="h-14 rounded-2xl bg-white border border-[#E2E8F0] font-bold text-center px-4 shadow-sm active:scale-[0.98] transition-all">
-                {label}
-              </button>
-            ))}
-          </div>
-        </Shell>
-      );
-    }
-
-    if (screen === 'welcome') {
-      return (
-        <Shell>
-          <div className="flex-1 h-full overflow-hidden bg-[#F8FAFC] px-6 pt-6 pb-6 flex flex-col">
-            <div className="flex justify-center">
-              <button onClick={() => setScreen('lang')} className="h-11 px-5 rounded-full bg-white shadow-[0_8px_22px_rgba(15,23,42,0.10)] border border-[#E2E8F0] flex items-center gap-3 text-[#0F172A] font-extrabold active:scale-[0.98] transition-all">
-                <Globe2 className="w-5 h-5 text-[#047857]" />
-                {t.languageName}
-              </button>
-            </div>
-            <div className="mt-14 flex justify-center">
-              <HamrohLogo />
-            </div>
-            <div className="mt-16 text-center">
-              <h1 className="text-[32px] leading-[1.14] font-black tracking-tight text-[#047857]">{t.welcomeTitle}</h1>
-              <p className="text-[#334155] mt-5 text-[17px] leading-7 max-w-75 mx-auto">{t.welcome}</p>
-            </div>
-            <div className="mt-auto space-y-4">
-              <button onClick={() => setScreen('login')} className="w-full h-14 rounded-[18px] bg-[#047857] text-white font-extrabold text-xl shadow-[0_12px_22px_rgba(4,120,87,0.18)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                {t.login}
-                <ChevronRight className="w-7 h-7" />
-              </button>
-              <button onClick={() => setScreen('role')} className="w-full h-14 rounded-[18px] bg-white border-2 border-[#047857] text-[#047857] font-extrabold text-lg active:scale-[0.98] transition-all">{t.register}</button>
-            </div>
-          </div>
-        </Shell>
-      );
-    }
-
-    if (false && screen === 'welcome') {
-      return (
-        <Shell>
-          <div className="flex-1 flex flex-col justify-between p-7 bg-[#F8FAFC]">
-            <div className="pt-20">
-              <HamrohLogo />
-              <h1 className="text-[40px] leading-tight font-black tracking-tight text-[#0F172A]">Hamroh</h1>
-              <p className="text-[#64748B] mt-5 text-lg leading-8 max-w-70">Надежные поездки между городами Таджикистана</p>
-            </div>
-            <div className="space-y-4 pb-3">
-              <button onClick={() => setScreen('login')} className="w-full h-17.5 rounded-[20px] bg-[#10B981] text-white font-extrabold text-base shadow-sm active:scale-[0.98] transition-all">{t.login}</button>
-              <button onClick={() => setScreen('role')} className="w-full h-17.5 rounded-[20px] bg-white border border-[#10B981] text-[#047857] font-extrabold text-base active:scale-[0.98] transition-all">{t.register}</button>
-            </div>
-          </div>
-        </Shell>
-      );
-    }
-
-    if (screen === 'login') {
-      return (
-        <Shell>
-          <Header title={t.login} back={() => setScreen('welcome')} />
-          <div className="flex-1 flex items-center px-5">
-            <div className="w-full space-y-5 -mt-16">
-              <input value={authPhone} onChange={event => updateAuthPhone(event.target.value)} className={inputClass} inputMode="tel" placeholder="+992900111111" />
-              <input value={authPassword} onChange={event => setAuthPassword(event.target.value)} className={inputClass} type="password" placeholder={t.password} />
-              <button onClick={login} className={primaryClass}>{t.login}</button>
-              <button onClick={() => setScreen('forgot')} className="w-full text-center text-sm text-[#047857] font-bold">{t.forgotPassword}</button>
-            </div>
-          </div>
-        </Shell>
-      );
-    }
-
-    if (screen === 'forgot') {
-      return (
-        <Shell>
-          <Header title={t.resetPasswordTitle} back={() => setScreen('login')} />
-          <div className="flex-1 flex items-center px-5">
-            <div className="w-full space-y-4 -mt-10">
-              <p className="text-sm text-[#64748B] leading-6">{t.resetPasswordHint}</p>
-              <input value={authPhone} onChange={event => updateAuthPhone(event.target.value)} className={inputClass} inputMode="tel" placeholder="+992900111111" />
-              <input value={resetCode} onChange={event => setResetCode(event.target.value)} className={inputClass} inputMode="numeric" placeholder={t.verificationCode} />
-              <input value={resetPassword} onChange={event => setResetPassword(event.target.value)} className={inputClass} type="password" placeholder={t.newPassword} />
-              <input value={resetConfirmPassword} onChange={event => setResetConfirmPassword(event.target.value)} className={inputClass} type="password" placeholder={t.repeatPassword} />
-              <button onClick={recoverPassword} className={primaryClass}>{t.savePassword}</button>
-            </div>
-          </div>
-        </Shell>
-      );
-    }
-
-    if (screen === 'role') {
-      return (
-        <Shell>
-          <div className="relative px-4 py-4 bg-white border-b border-[#E2E8F0] shrink-0">
-            <button onClick={() => setScreen('welcome')} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#F8FAFC] flex items-center justify-center">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="mx-auto max-w-62.5 text-center">
-              <h2 className="text-lg font-black leading-tight">{t.roleChoice}</h2>
-              <p className="text-xs text-[#64748B] mt-1">Hamroh</p>
-            </div>
-          </div>
-          <div className="flex-1 flex items-center px-5">
-            <div className="w-full space-y-4 -mt-16">
-              <button onClick={() => { setRegRole(UserRole.Passenger); setScreen('register'); }} className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6 text-center shadow-sm active:scale-[0.98] transition-all">
-                <Users className="w-8 h-8 text-[#10B981] mx-auto mb-4" />
-                <p className="font-black text-lg">{t.passengerRole}</p>
-                <p className="text-sm text-[#64748B] mt-2 max-w-60 mx-auto">{t.passengerRoleDescription}</p>
-              </button>
-              <button onClick={() => { setRegRole(UserRole.Driver); setScreen('register'); }} className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6 text-center shadow-sm active:scale-[0.98] transition-all">
-                <Car className="w-8 h-8 text-[#10B981] mx-auto mb-4" />
-                <p className="font-black text-lg">{t.driverRole}</p>
-                <p className="text-sm text-[#64748B] mt-2 max-w-60 mx-auto">{t.driverRoleDescription}</p>
-              </button>
-            </div>
-          </div>
-        </Shell>
-      );
-    }
-
-    return (
-      <Shell>
-        <Header title={regRole === UserRole.Driver ? t.driverRegister : t.passengerRegister} back={() => setScreen('role')} />
-        <div className="flex-1 min-h-0 overflow-y-auto p-5 pb-28 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <input value={firstName} onChange={event => setFirstName(event.target.value)} className={inputClass} placeholder={t.firstName} />
-            <input value={lastName} onChange={event => setLastName(event.target.value)} className={inputClass} placeholder={t.lastName} />
-          </div>
-          <input value={authPhone} onChange={event => updateAuthPhone(event.target.value)} className={inputClass} inputMode="tel" placeholder="+992900111111" />
-          <div className="grid grid-cols-2 gap-3">
-            <input value={authPassword} onChange={event => setAuthPassword(event.target.value)} className={inputClass} type="password" placeholder={t.password} />
-            <input value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} className={inputClass} type="password" placeholder={t.repeatPassword} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setGender('male')} className={`h-12 rounded-2xl border font-bold ${gender === 'male' ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.male}</button>
-            <button onClick={() => setGender('female')} className={`h-12 rounded-2xl border font-bold ${gender === 'female' ? 'bg-[#D1FAE5] border-[#10B981]' : 'bg-white border-[#E2E8F0]'}`}>{t.female}</button>
-          </div>
-          {regRole === UserRole.Driver && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-3xl p-4 border border-[#E2E8F0] space-y-3">
-                <p className="font-black">Документы водителя</p>
-                <input value={licenseNumber} onChange={event => setLicenseNumber(event.target.value)} className={inputClass} placeholder="Номер водительских прав" />
-                <div className="grid grid-cols-2 gap-2 text-xs font-bold text-[#64748B]">
-                  {['Фото профиля', 'Live selfie', 'Паспорт / ID', 'Права'].map(item => <div key={item} className="rounded-2xl bg-[#F8FAFC] p-3 border border-[#E2E8F0]">{item}<br /><span className="text-[#10B981]">готово</span></div>)}
-                </div>
-              </div>
-              <div className="bg-white rounded-3xl p-4 border border-[#E2E8F0] space-y-3">
-                <p className="font-black">Автомобиль</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <input value={carBrand} onChange={event => setCarBrand(event.target.value)} className={inputClass} placeholder="Марка" />
-                  <input value={carModel} onChange={event => setCarModel(event.target.value)} className={inputClass} placeholder="Модель" />
-                  <input value={carColor} onChange={event => setCarColor(event.target.value)} className={inputClass} placeholder="Цвет" />
-                  <input value={carYear} onChange={event => setCarYear(event.target.value)} className={inputClass} placeholder="Год" />
-                </div>
-                <input value={carPlate} onChange={event => setCarPlate(event.target.value)} className={inputClass} placeholder="Гос. номер" />
-                <input value={carSeats} onChange={event => setCarSeats(Number(event.target.value))} className={inputClass} type="number" placeholder="Мест" />
-                <div className="grid grid-cols-2 gap-2 text-xs font-bold text-[#64748B]">
-                  {['Техпаспорт', 'Фото спереди', 'Фото сзади', 'Фото салона'].map(item => <div key={item} className="rounded-2xl bg-[#F8FAFC] p-3 border border-[#E2E8F0]">{item}<br /><span className="text-[#10B981]">готово</span></div>)}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="p-4 bg-white border-t border-[#E2E8F0] safe-bottom-panel">
-          <button onClick={register} className={primaryClass}>
-            {regRole === UserRole.Driver ? 'Отправить на проверку' : 'Создать аккаунт'}
-          </button>
-        </div>
-      </Shell>
-    );
-  };
 
   const PassengerApp = () => (
     <Shell>
       <div className="flex-1 min-h-0 overflow-y-auto">
         {passengerTab === 'search' && (
           <div className="p-5 space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div>
                 <p className="text-sm text-[#64748B]">{t.welcomeBack}</p>
                 <h2 className="text-2xl font-black">{currentUser?.fullName.split(' ')[0]}</h2>
               </div>
-              <button onClick={() => setPassengerTab('notifications')} className="w-11 h-11 rounded-2xl bg-white border border-[#E2E8F0] flex items-center justify-center relative">
-                <Bell className="w-5 h-5" />
-                {unreadNotificationsCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-500 text-white rounded-full text-[10px] font-black flex items-center justify-center">{unreadNotificationsCount}</span>}
-              </button>
             </div>
             {penaltyAmount > 0 && (
               <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4 text-sm text-rose-800 font-semibold">
@@ -1693,9 +1087,9 @@ export default function PhoneSimulator({
             )}
             <div className="bg-white rounded-[28px] border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
               <label className="text-xs font-bold text-[#64748B]">{t.from}</label>
-              <CitySelect value={fromCity} onChange={setFromCity} />
+              <CitySelect value={fromCity} onChange={setFromCity} cities={cities} language={language} className={selectClass} />
               <label className="text-xs font-bold text-[#64748B]">{t.to}</label>
-              <CitySelect value={toCity} onChange={setToCity} />
+              <CitySelect value={toCity} onChange={setToCity} cities={cities} language={language} className={selectClass} />
               <div className="grid grid-cols-[minmax(0,1fr)_112px] gap-3">
                 <label className="space-y-1 min-w-0">
                   <span className="text-xs font-bold text-[#64748B]">{t.date}</span>
@@ -1721,11 +1115,62 @@ export default function PhoneSimulator({
           </div>
         )}
         {passengerTab === 'trips' && <TripsList mode="passenger" />}
-        {passengerTab === 'messages' && <Messages />}
-        {passengerTab === 'notifications' && <Notifications />}
-        {passengerTab === 'profile' && <Profile role="passenger" />}
+        {passengerTab === 'messages' && (
+          <MessagesPanel
+            bookings={bookings}
+            trips={trips}
+            users={users}
+            currentUser={currentUser}
+            hiddenChatUserIds={hiddenChatUserIds}
+            setHiddenChatUserIds={setHiddenChatUserIds}
+            chatUserId={chatUserId}
+            setChatUserId={setChatUserId}
+            chats={chats}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            chatInputRef={chatInputRef}
+            sendChat={sendChat}
+            t={t}
+          />
+        )}
+        {passengerTab === 'notifications' && (
+          <NotificationsPanel
+            myNotifications={myNotifications}
+            bookings={bookings}
+            currentUser={currentUser}
+            unreadNotificationsCount={unreadNotificationsCount}
+            t={t}
+            openNotification={openNotification}
+            rejectBooking={rejectBooking}
+            acceptBooking={acceptBooking}
+            setNotifications={setNotifications}
+            setDriverTab={setDriverTab}
+            setHiddenNotificationIds={setHiddenNotificationIds}
+          />
+        )}
+        {passengerTab === 'profile' && (
+          <ProfilePanel
+            role="passenger"
+            currentUser={currentUser}
+            driverProfiles={driverProfiles}
+            vehicles={vehicles}
+            trips={trips}
+            bookings={bookings}
+            unreadNotificationsCount={unreadNotificationsCount}
+            setPassengerTab={setPassengerTab}
+            setCurrentUser={setCurrentUser}
+            setScreen={setScreen}
+          />
+        )}
       </div>
-      <BottomNav role={UserRole.Passenger} />
+      <BottomNav
+        role={UserRole.Passenger}
+        passengerTab={passengerTab}
+        driverTab={driverTab}
+        setPassengerTab={setPassengerTab}
+        setDriverTab={setDriverTab}
+        labels={t}
+      />
     </Shell>
   );
 
@@ -1950,191 +1395,6 @@ export default function PhoneSimulator({
     );
   };
 
-  const Messages = () => {
-    const acceptedBookings = bookings.filter(booking => {
-      const trip = trips.find(item => item.id === booking.tripId);
-      if (booking.status !== BookingStatus.Accepted || trip?.status === TripStatus.Completed) return false;
-      return booking.passengerId === currentUser?.id || trip?.driverId === currentUser?.id;
-    });
-    const peers = acceptedBookings.map(booking => {
-      const trip = trips.find(item => item.id === booking.tripId);
-      return currentUser?.role === UserRole.Driver ? userFor(booking.passengerId) : userFor(trip?.driverId);
-    }).filter(Boolean).filter(peer => !hiddenChatUserIds.includes((peer as User).id)) as User[];
-    const activePeer = userFor(chatUserId) || peers[0];
-    return (
-      <div className="p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black">{t.messages}</h2>
-          {activePeer && <button onClick={() => setHiddenChatUserIds(prev => [...prev, activePeer.id])} className="text-xs font-black text-rose-600">Удалить чат</button>}
-        </div>
-        {peers.length === 0 ? <p className="bg-white rounded-3xl p-6 text-sm text-[#64748B]">Чат доступен только после подтверждения и до завершения поездки.</p> : (
-          <>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {peers.map(peer => <button key={peer.id} onClick={() => setChatUserId(peer.id)} className={`px-3 h-10 rounded-full text-sm font-bold whitespace-nowrap ${activePeer?.id === peer.id ? 'bg-[#10B981] text-white' : 'bg-white border border-[#E2E8F0]'}`}>{peer.fullName.split(' ')[0]}</button>)}
-            </div>
-            <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4 h-80 flex flex-col">
-              <div className="flex-1 overflow-y-auto space-y-2">
-                {(chats[activePeer?.id || ''] || ['Здравствуйте! Бронь подтверждена.']).map((message, index) => (
-                  <div key={`${message}_${index}`} className="max-w-[80%] rounded-2xl bg-[#D1FAE5] p-3 text-sm font-medium ml-auto">{message}</div>
-                ))}
-              </div>
-              <div className="flex gap-2 pt-3">
-                <input
-                  ref={chatInputRef}
-                  value={chatInput}
-                  onChange={event => setChatInput(event.target.value)}
-                  onBlur={() => {
-                    if (chatInput) requestAnimationFrame(() => chatInputRef.current?.focus());
-                  }}
-                  className="flex-1 h-11 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] px-3 text-sm outline-none"
-                  placeholder="Сообщение"
-                />
-                <button onClick={() => sendChat(activePeer?.id)} className="w-11 h-11 rounded-2xl bg-[#10B981] text-white flex items-center justify-center"><Send className="w-5 h-5" /></button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  const Notifications = () => (
-    <div className="p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-black">{t.notifications}</h2>
-        {myNotifications.length > 0 && <span className="text-xs font-black text-[#047857]">{unreadNotificationsCount} {t.newCount}</span>}
-      </div>
-      {myNotifications.length === 0 && <p className="bg-white rounded-3xl p-6 text-sm text-[#64748B]">{t.noNotifications}</p>}
-      {myNotifications.map(item => {
-        const relatedBooking = bookings.find(booking => booking.id === item.bookingId);
-        const canReplyToBooking = currentUser?.role === UserRole.Driver && item.type === 'booking_request' && relatedBooking?.status === BookingStatus.Pending;
-        return (
-          <div key={item.id} className={`w-full bg-white rounded-3xl border p-4 text-left shadow-sm ${item.isRead ? 'border-[#E2E8F0]' : 'border-[#10B981]'}`}>
-            <button onClick={() => openNotification(item)} className="w-full text-left">
-              <p className="font-black">{item.title}</p>
-              <p className="text-sm text-[#64748B] mt-1">{item.message}</p>
-              <p className="text-[11px] font-bold text-[#94A3B8] mt-2">{t.tapToOpen}</p>
-            </button>
-            {canReplyToBooking && relatedBooking && (
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <button
-                  onClick={() => {
-                    rejectBooking(relatedBooking);
-                    setNotifications(prev => prev.map(notification => notification.id === item.id ? { ...notification, isRead: true } : notification));
-                  }}
-                  className="h-11 rounded-2xl bg-rose-50 text-rose-700 font-black"
-                >
-                  {t.reject}
-                </button>
-                <button
-                  onClick={() => {
-                    acceptBooking(relatedBooking);
-                    setNotifications(prev => prev.map(notification => notification.id === item.id ? { ...notification, isRead: true } : notification));
-                    setDriverTab('messages');
-                  }}
-                  className="h-11 rounded-2xl bg-[#10B981] text-white font-black"
-                >
-                  {t.accept}
-                </button>
-              </div>
-            )}
-            <button onClick={() => setHiddenNotificationIds(prev => [...prev, item.id])} className="mt-3 text-xs font-black text-rose-600">{t.deleteNotification}</button>
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const Profile = ({ role }: { role: 'passenger' | 'driver' }) => {
-    const profile = driverProfileFor(currentUser?.id);
-    const vehicle = vehicleFor(currentUser?.id);
-    const driverTripIds = trips.filter(trip => trip.driverId === currentUser?.id).map(trip => trip.id);
-    const driverBookings = bookings.filter(booking => driverTripIds.includes(booking.tripId));
-    const completedEarnings = driverBookings
-      .filter(booking => booking.status === BookingStatus.Completed)
-      .reduce((sum, booking) => sum + booking.totalPrice, 0);
-    const activeEarnings = driverBookings
-      .filter(booking => booking.status === BookingStatus.Accepted)
-      .reduce((sum, booking) => sum + booking.totalPrice, 0);
-    const totalEarnings = completedEarnings;
-    const passengerBookings = bookings.filter(booking => booking.passengerId === currentUser?.id);
-    const passengerCompleted = passengerBookings.filter(booking => booking.status === BookingStatus.Completed).length;
-    const passengerActive = passengerBookings.filter(booking => [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)).length;
-    return (
-      <div className="p-5 space-y-4">
-        <div className="bg-linear-to-br from-[#047857] to-[#10B981] rounded-[28px] p-5 text-white shadow-lg shadow-emerald-900/20">
-          <div className="flex items-center gap-4">
-            <img src={currentUser?.avatarUrl} className="w-20 h-20 rounded-3xl object-cover border-4 border-white/30" alt="" />
-            <div className="flex-1">
-              <h2 className="text-2xl font-black">{currentUser?.fullName}</h2>
-              <p className="text-sm text-white/80">{currentUser?.phone}</p>
-              <p className="text-xs text-white/80 mt-1">{currentUser?.gender === 'female' ? 'Женщина' : 'Мужчина'}</p>
-            </div>
-          </div>
-        </div>
-        {role === 'passenger' && (
-          <>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4">
-                <p className="text-xs text-[#64748B]">Активные</p>
-                <p className="text-2xl font-black">{passengerActive}</p>
-              </div>
-              <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4">
-                <p className="text-xs text-[#64748B]">Завершено</p>
-                <p className="text-2xl font-black">{passengerCompleted}</p>
-              </div>
-              <button onClick={() => setPassengerTab('notifications')} className="bg-white rounded-3xl border border-[#E2E8F0] p-4 text-left relative">
-                <p className="text-xs text-[#64748B]">Уведомления</p>
-                <p className="text-2xl font-black">{unreadNotificationsCount}</p>
-                {unreadNotificationsCount > 0 && <span className="absolute top-3 right-3 w-3 h-3 rounded-full bg-red-500" />}
-              </button>
-            </div>
-            <div className="bg-white rounded-3xl border border-[#E2E8F0] p-5 space-y-2">
-              <p className="font-black">Безопасность поездок</p>
-              <p className="text-sm text-[#64748B]">Телефон и номер машины открываются после подтверждения водителем. После завершения поездки можно оставить отзыв.</p>
-            </div>
-          </>
-        )}
-        {role === 'driver' && (
-          <div className="bg-white rounded-3xl border border-[#E2E8F0] p-5 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-[#F8FAFC] p-3">
-                <p className="text-xs text-[#64748B]">Рейтинг</p>
-                <p className="text-2xl font-black">{profile?.rating || 0}</p>
-              </div>
-              <div className="rounded-2xl bg-[#F8FAFC] p-3">
-                <p className="text-xs text-[#64748B]">Поездки</p>
-                <p className="text-2xl font-black">{profile?.totalTrips || 0}</p>
-              </div>
-            </div>
-            <div className="rounded-3xl bg-[#ECFDF5] border border-[#A7F3D0] p-4 space-y-3">
-              <p className="font-black text-[#047857]">Заработок</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-[#64748B]">Всего</p>
-                  <p className="text-2xl font-black text-[#047857]">{money(totalEarnings)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B]">Ожидается</p>
-                  <p className="text-2xl font-black text-[#0F172A]">{money(activeEarnings)}</p>
-                </div>
-              </div>
-              <p className="text-xs text-[#64748B]">Завершено: {money(completedEarnings)}</p>
-              <p className="text-xs text-[#64748B]">Активные брони попадут в заработок только после завершения поездки.</p>
-            </div>
-            <p className="font-black">Статус проверки</p>
-            <p className="text-sm text-[#64748B]">{profile?.verificationStatus || VerificationStatus.PendingVerification}</p>
-            <p className="text-sm font-bold">{vehicle?.brand} {vehicle?.model}</p>
-            <p className="text-sm text-[#64748B]">{vehicle?.plateNumber}</p>
-          </div>
-        )}
-        <button onClick={() => { setCurrentUser(null); setScreen('welcome'); }} className="w-full h-12 rounded-2xl bg-rose-50 text-rose-700 font-black flex items-center justify-center gap-2">
-          <LogOut className="w-5 h-5" /> Выйти
-        </button>
-      </div>
-    );
-  };
-
   const DriverApp = () => {
     const profile = driverProfileFor(currentUser?.id);
     const vehicle = vehicleFor(currentUser?.id);
@@ -2145,7 +1405,6 @@ export default function PhoneSimulator({
       if (driverHomeMode === 'route') return trip.fromCity === driverCity && trip.toCity === driverRouteTo;
       if (trip.fromCity !== driverCity) return false;
       if (driverFilterTo && trip.toCity !== driverFilterTo) return false;
-      if (driverMaxPrice && displayPriceForTrip(trip) > Number(driverMaxPrice)) return false;
       return true;
     };
     const driverRequestScope = (request: PassengerRequest) => {
@@ -2153,7 +1412,6 @@ export default function PhoneSimulator({
       if (driverHomeMode === 'route') return request.fromCity === driverCity && request.toCity === driverRouteTo;
       if (request.fromCity !== driverCity) return false;
       if (driverFilterTo && request.toCity !== driverFilterTo) return false;
-      if (driverMaxPrice && (request.desiredPrice || 0) > Number(driverMaxPrice)) return false;
       return true;
     };
     const marketTrips = trips.filter(driverTripScope);
@@ -2175,16 +1433,13 @@ export default function PhoneSimulator({
                   <button onClick={() => setDriverHomeMode('route')} className={`h-11 rounded-xl text-xs font-black ${driverHomeMode === 'route' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Маршрут</button>
                 </div>
                 <p className="font-black">{driverHomeMode === 'city' ? 'Выберите город' : 'Выберите маршрут'}</p>
-                <CitySelect value={driverCity} onChange={setDriverCity} />
-                {driverHomeMode === 'route' && <CitySelect value={driverRouteTo} onChange={setDriverRouteTo} />}
+                <CitySelect value={driverCity} onChange={setDriverCity} cities={cities} language={language} className={selectClass} />
+                {driverHomeMode === 'route' && <CitySelect value={driverRouteTo} onChange={setDriverRouteTo} cities={cities} language={language} className={selectClass} />}
                 {driverHomeMode === 'city' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <select value={driverFilterTo} onChange={event => setDriverFilterTo(event.target.value)} className={selectClass}>
-                      <option value="">Все направления</option>
-                      {cities.filter(city => city.nameRu !== driverCity).map(city => <option key={city.id} value={city.nameRu}>{city.nameRu}</option>)}
-                    </select>
-                    <input type="number" value={driverMaxPrice} onChange={event => setDriverMaxPrice(event.target.value)} className={inputClass} placeholder="Цена до" />
-                  </div>
+                  <select value={driverFilterTo} onChange={event => setDriverFilterTo(event.target.value)} className={selectClass}>
+                    <option value="">Все направления</option>
+                    {cities.filter(city => city.nameRu !== driverCity).map(city => <option key={city.id} value={city.nameRu}>{city.nameRu}</option>)}
+                  </select>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
@@ -2197,7 +1452,7 @@ export default function PhoneSimulator({
                   <span className="text-xs font-black text-[#047857]">{marketTrips.length}</span>
                 </div>
                 {marketTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">{t.noTripsFromCity}</p>}
-                {marketTrips.slice(0, 4).map(trip => <TripCard key={trip.id} trip={trip} />)}
+                {marketTrips.slice(0, 4).map(renderTripCard)}
               </div>}
               {driverHomeView === 'requests' && <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -2205,7 +1460,7 @@ export default function PhoneSimulator({
                   <span className="text-xs font-black text-[#047857]">{homeRequests.length}</span>
                 </div>
                 {homeRequests.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">Пока нет заявок от адреса</p>}
-                {homeRequests.slice(0, 3).map(req => <RequestCard key={req.id} request={req} />)}
+                {homeRequests.slice(0, 3).map(renderRequestCard)}
               </div>}
             </div>
           )}
@@ -2221,8 +1476,8 @@ export default function PhoneSimulator({
               ) : (
                 <>
                   {!isVerified && <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 text-sm text-amber-800 font-semibold">Создание поездок доступно после проверки.</div>}
-                  <CitySelect value={createFrom} onChange={setCreateFrom} />
-                  <CitySelect value={createTo} onChange={setCreateTo} />
+                  <CitySelect value={createFrom} onChange={setCreateFrom} cities={cities} language={language} className={selectClass} />
+                  <CitySelect value={createTo} onChange={setCreateTo} cities={cities} language={language} className={selectClass} />
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={createDate} onChange={event => setCreateDate(event.target.value)} className={inputClass} />
                     <input value={createTime} onChange={event => setCreateTime(event.target.value)} disabled={createTimeMode === 'whenFull'} className={inputClass} placeholder="09:00" />
@@ -2327,7 +1582,7 @@ export default function PhoneSimulator({
                 );
               })}
               <h3 className="font-black text-sm text-[#64748B]">Заявки от адреса</h3>
-              {passengerRequests.filter(req => req.status === 'pending').map(req => <RequestCard key={req.id} request={req} />)}
+              {passengerRequests.filter(req => req.status === 'pending').map(renderRequestCard)}
               {pendingBookings.length === 0 && passengerRequests.filter(req => req.status === 'pending').length === 0 && (
                 <p className="text-sm text-[#64748B] bg-white rounded-3xl p-6 text-center">Пока нет заявок пассажиров</p>
               )}
@@ -2345,38 +1600,63 @@ export default function PhoneSimulator({
               </button>
             </div>
           )}
-          {driverTab === 'messages' && <Messages />}
-          {driverTab === 'notifications' && <Notifications />}
-          {driverTab === 'profile' && <Profile role="driver" />}
+          {driverTab === 'messages' && (
+            <MessagesPanel
+              bookings={bookings}
+              trips={trips}
+              users={users}
+              currentUser={currentUser}
+              hiddenChatUserIds={hiddenChatUserIds}
+              setHiddenChatUserIds={setHiddenChatUserIds}
+              chatUserId={chatUserId}
+              setChatUserId={setChatUserId}
+              chats={chats}
+              chatInput={chatInput}
+              setChatInput={setChatInput}
+              chatInputRef={chatInputRef}
+              sendChat={sendChat}
+              t={t}
+            />
+          )}
+          {driverTab === 'notifications' && (
+            <NotificationsPanel
+              myNotifications={myNotifications}
+              bookings={bookings}
+              currentUser={currentUser}
+              unreadNotificationsCount={unreadNotificationsCount}
+              t={t}
+              openNotification={openNotification}
+              rejectBooking={rejectBooking}
+              acceptBooking={acceptBooking}
+              setNotifications={setNotifications}
+              setDriverTab={setDriverTab}
+              setHiddenNotificationIds={setHiddenNotificationIds}
+            />
+          )}
+          {driverTab === 'profile' && (
+            <ProfilePanel
+              role="driver"
+              currentUser={currentUser}
+              driverProfiles={driverProfiles}
+              vehicles={vehicles}
+              trips={trips}
+              bookings={bookings}
+              unreadNotificationsCount={unreadNotificationsCount}
+              setPassengerTab={setPassengerTab}
+              setCurrentUser={setCurrentUser}
+              setScreen={setScreen}
+            />
+          )}
         </div>
-        <BottomNav role={UserRole.Driver} />
+        <BottomNav
+          role={UserRole.Driver}
+          passengerTab={passengerTab}
+          driverTab={driverTab}
+          setPassengerTab={setPassengerTab}
+          setDriverTab={setDriverTab}
+          labels={t}
+        />
       </Shell>
-    );
-  };
-
-  const RequestCard: React.FC<{ request: PassengerRequest }> = ({ request }) => {
-    const passenger = userFor(request.passengerId);
-    return (
-      <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
-        <div className="flex justify-between gap-3">
-          <div>
-            <p className="font-black">{request.fromCity} {'->'} {request.toCity}</p>
-            <p className="text-xs text-[#64748B]">{request.departureDate} в {request.departureTime}</p>
-          </div>
-          <p className="font-black text-[#047857]">{money(request.desiredPrice || 0)}</p>
-        </div>
-        <p className="text-sm text-[#64748B]"><b>Посадка:</b> {request.pickupAddress}</p>
-        <p className="text-sm text-[#64748B]"><b>Высадка:</b> {request.dropoffAddress}</p>
-        {request.pickupLatitude && request.pickupLongitude && (
-          <p className="text-xs text-[#047857] font-bold">Координаты: {request.pickupLatitude.toFixed(4)}, {request.pickupLongitude.toFixed(4)}</p>
-        )}
-        <p className="text-sm text-[#64748B]">{request.seatsCount} мест(а), багаж: {request.baggageAllowed ? 'да' : 'нет'}</p>
-        <div className="flex items-center gap-3">
-          <img src={passenger?.avatarUrl} className="w-9 h-9 rounded-full object-cover" alt="" />
-          <p className="font-bold text-sm">{passenger?.fullName}</p>
-        </div>
-        <button onClick={() => offerPassengerRequest(request)} className={primaryClass}>Предложить поездку</button>
-      </div>
     );
   };
 
@@ -2413,7 +1693,7 @@ export default function PhoneSimulator({
         <div className="flex-1 min-h-0 overflow-y-auto p-5 pb-24 space-y-4 bg-[#FAF7FF]">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[#334155]">{t.foundTrips}: {filteredTrips.length}</p>
           {filteredTrips.length === 0 && <div className="bg-white rounded-3xl p-6 text-center text-[#64748B]">{t.noTripsFound}</div>}
-          {filteredTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
+          {filteredTrips.map(renderTripCard)}
         </div>
       </Shell>
     );
@@ -2664,8 +1944,8 @@ export default function PhoneSimulator({
     <Shell>
       <Header title="Заявка от адреса" back={() => setScreen('passenger')} />
       <div className="flex-1 min-h-0 overflow-y-auto p-5 pb-28 space-y-4">
-        <CitySelect value={fromCity} onChange={setFromCity} />
-        <CitySelect value={toCity} onChange={setToCity} />
+        <CitySelect value={fromCity} onChange={setFromCity} cities={cities} language={language} className={selectClass} />
+        <CitySelect value={toCity} onChange={setToCity} cities={cities} language={language} className={selectClass} />
         <div className="space-y-2">
           <input value={requestPickup} onChange={event => setRequestPickup(event.target.value)} className={inputClass} placeholder="Точный адрес посадки" />
           <div className="grid grid-cols-2 gap-2">
@@ -2722,7 +2002,53 @@ export default function PhoneSimulator({
   );
 
   let content: React.ReactNode;
-  if (!currentUser && ['lang', 'welcome', 'login', 'forgot', 'role', 'register'].includes(screen)) content = AuthScreens();
+  if (!currentUser && ['lang', 'welcome', 'login', 'forgot', 'role', 'register'].includes(screen)) content = (
+    <AuthScreens
+      screen={screen}
+      setScreen={setScreen}
+      setLanguage={setLanguage}
+      t={t}
+      inputClass={inputClass}
+      primaryClass={primaryClass}
+      authPhone={authPhone}
+      updateAuthPhone={updateAuthPhone}
+      authPassword={authPassword}
+      setAuthPassword={setAuthPassword}
+      login={login}
+      resetCode={resetCode}
+      setResetCode={setResetCode}
+      resetPassword={resetPassword}
+      setResetPassword={setResetPassword}
+      resetConfirmPassword={resetConfirmPassword}
+      setResetConfirmPassword={setResetConfirmPassword}
+      recoverPassword={recoverPassword}
+      regRole={regRole}
+      setRegRole={setRegRole}
+      firstName={firstName}
+      setFirstName={setFirstName}
+      lastName={lastName}
+      setLastName={setLastName}
+      confirmPassword={confirmPassword}
+      setConfirmPassword={setConfirmPassword}
+      gender={gender}
+      setGender={setGender}
+      licenseNumber={licenseNumber}
+      setLicenseNumber={setLicenseNumber}
+      carBrand={carBrand}
+      setCarBrand={setCarBrand}
+      carModel={carModel}
+      setCarModel={setCarModel}
+      carColor={carColor}
+      setCarColor={setCarColor}
+      carYear={carYear}
+      setCarYear={setCarYear}
+      carPlate={carPlate}
+      setCarPlate={setCarPlate}
+      carSeats={carSeats}
+      setCarSeats={setCarSeats}
+      register={register}
+    />
+  );
   else if (screen === 'results') content = ResultsScreen();
   else if (screen === 'trip') content = TripDetailsScreen();
   else if (screen === 'booking') content = BookingScreen();
@@ -2732,51 +2058,26 @@ export default function PhoneSimulator({
   else content = PassengerApp();
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="flex items-center gap-2 mb-4 bg-white border border-[#E2E8F0] rounded-2xl p-2 shadow-sm">
-        <button onClick={() => setDeviceType('ios')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'ios' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>iOS</button>
-        <button onClick={() => setDeviceType('android')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'android' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>Android</button>
-      </div>
-      <div className={`relative w-90 h-180 bg-neutral-900 border-10 border-neutral-800 shadow-2xl overflow-hidden select-none ${deviceType === 'ios' ? 'rounded-[48px]' : 'rounded-[36px]'}`}>
-        {deviceType === 'ios' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-50" />}
-        {deviceType === 'android' && <div className="absolute top-3 left-1/2 -translate-x-1/2 w-3 h-3 bg-black rounded-full z-50" />}
-        <div className="h-8 bg-white px-6 pt-1 flex items-center justify-between z-40 relative text-[#0F172A] text-[10px] font-bold">
-          <span>09:41</span>
-          <span>5G 98%</span>
-        </div>
-        <div className="absolute inset-0 top-8 bg-white flex flex-col overflow-hidden safe-phone-screen">
-          {topNotification && (
-            <div className="absolute top-3 left-4 right-4 z-50 rounded-2xl bg-[#0F172A] text-white p-3 shadow-xl">
-              <button
-                onClick={() => {
-                  openNotification(topNotification);
-                  setTopNotification(null);
-                }}
-                className="w-full text-left"
-              >
-                <div className="flex items-start gap-2">
-                  <Bell className="w-4 h-4 mt-0.5 shrink-0 text-[#34D399]" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-black leading-tight truncate">{topNotification.title}</p>
-                    <p className="text-[11px] font-bold text-slate-200 mt-1 leading-snug line-clamp-2">{topNotification.message}</p>
-                    <p className="text-[10px] font-bold text-slate-400 mt-2">{formatDateTime(topNotification.createdAt)}</p>
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={() => setTopNotification(null)}
-                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/10 text-[11px] font-black"
-                aria-label="Закрыть уведомление"
-              >
-                x
-              </button>
-            </div>
-          )}
-          {toast && <div className={`absolute ${topNotification ? 'top-28' : 'top-3'} left-4 right-4 z-50 rounded-2xl bg-[#0F172A] text-white p-3 text-xs font-bold shadow-xl`}>{toast}</div>}
-          {content}
-        </div>
-        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-neutral-600 rounded-full z-50" />
-      </div>
-    </div>
+    <PhoneDeviceFrame
+      deviceType={deviceType}
+      setDeviceType={setDeviceType}
+      topNotification={topNotification}
+      setTopNotification={setTopNotification}
+      openNotification={openNotification}
+      formatDateTime={formatDateTime}
+      toast={toast}
+      unreadNotificationsCount={unreadNotificationsCount}
+      onOpenNotifications={currentUser ? () => {
+        if (currentUser.role === UserRole.Driver) {
+          setDriverTab('notifications');
+          setScreen('driver');
+          return;
+        }
+        setPassengerTab('notifications');
+        setScreen('passenger');
+      } : undefined}
+    >
+      {content}
+    </PhoneDeviceFrame>
   );
 }

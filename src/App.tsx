@@ -14,6 +14,7 @@ import {
 } from './mockData';
 import PhoneSimulator from './components/PhoneSimulator';
 import DeveloperDocs from './components/DeveloperDocs';
+import AdminDashboard from './components/AdminDashboard';
 import { 
   Users, Layers, Settings, ShieldCheck, ShieldAlert, BarChart3, Star, AlertCircle, CheckCircle, 
   Calendar, Check, X, Hammer, FileCode, Lock, Globe, Server, AlertTriangle, MapPin, Compass
@@ -370,278 +371,22 @@ export default function App() {
 
             {/* TAB TWO: LIVE INTERACTIVE ADMIN CONSOLE PANEL */}
             {webTab === 'admin' && (
-              <div id="admin-panel-console" className="p-6 overflow-y-auto h-full space-y-6 text-left">
-                
-                {/* Stats panel summary */}
-                <div>
-                  <h3 className="text-base font-extrabold tracking-tight text-white flex items-center space-x-2">
-                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                    <span>Hamroh Tajikistan Admin Dashboard</span>
-                  </h3>
-                  <p className="text-xs text-slate-400">Manage user licenses, confirm vehicles, resolve complaints and enforce business rules.</p>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-bold">Всего поездок</span>
-                    <span className="text-lg font-black text-slate-100">{trips.length}</span>
-                  </div>
-                  <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-bold">Активные На Проверке</span>
-                    <span className="text-lg font-black text-amber-400">
-                      {driverProfiles.filter(d => d.verificationStatus === VerificationStatus.PendingVerification).length}
-                    </span>
-                  </div>
-                  <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-bold">Жалобы Open</span>
-                    <span className="text-lg font-black text-rose-500">
-                      {complaints.filter(c => c.status === ComplaintStatus.Open).length}
-                    </span>
-                  </div>
-                  <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-bold">Зарегистрировано</span>
-                    <span className="text-lg font-black text-sky-400">{users.length}</span>
-                  </div>
-                </div>
-
-                {/* MODERATION SUBSECTION A: PENDING LICENSES AND VEHICLES */}
-                <div className="space-y-3">
-                  <div className="border-b border-slate-800 pb-1 flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      🛡️ Заявки на верификацию водителей
-                    </span>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded">В ручном режиме</span>
-                  </div>
-
-                  {driverProfiles.filter(p => p.verificationStatus === VerificationStatus.PendingVerification).length === 0 ? (
-                    <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-xl text-center">
-                      <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                      <p className="text-xs text-slate-400 italic">Все водители и транспортные средства верифицированы!</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {driverProfiles.filter(p => p.verificationStatus === VerificationStatus.PendingVerification).map(p => {
-                        const drvUser = users.find(u => u.id === p.userId);
-                        const drvVeh = vehicles.find(v => v.driverId === p.userId);
-
-                        return (
-                          <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="space-y-2">
-                              {/* Driver description */}
-                              <div className="flex items-center space-x-2.5">
-                                <img src={drvUser?.avatarUrl} className="w-9 h-9 rounded-full border border-slate-700" alt="" />
-                                <div className="text-left">
-                                  <span className="block font-bold text-xs text-white">{drvUser?.fullName}</span>
-                                  <span className="block text-[10px] text-slate-400">{drvUser?.phone} • {drvUser?.city}</span>
-                                </div>
-                              </div>
-
-                              <div className="text-[11px] font-mono text-slate-400 leading-normal pl-2 border-l-2 border-slate-800 space-y-0.5">
-                                <div><b>Лицензия (ВУ) №:</b> {p.licenseNumber || 'Не заполнено'}</div>
-                                <div><b>Автомобиль:</b> {drvVeh ? `${drvVeh.brand} ${drvVeh.model} (${drvVeh.color}) [${drvVeh.plateNumber}]` : 'Автомобиль не добавлен'}</div>
-                              </div>
-                            </div>
-
-                            {/* Approving Controls */}
-                            <div className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 shrink-0">
-                              <button
-                                onClick={() => handleAdminApproveDriver(p.userId)}
-                                className="flex-1 md:w-28 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg text-center transition-colors"
-                              >
-                                Подтвердить ВУ
-                              </button>
-                              <button
-                                onClick={() => handleAdminRejectDriver(p.userId)}
-                                className="flex-1 md:w-28 bg-rose-950/40 hover:bg-rose-950 text-rose-500 border border-rose-900/40 font-bold text-xs py-1.5 px-3 rounded-lg text-center transition-all"
-                              >
-                                Отклонить
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* MODERATION SUBSECTION B: ACTIVE COMPLAINTS / DISPUTE CENTER */}
-                <div className="space-y-3">
-                  <div className="border-b border-slate-800 pb-1 flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      ⚠️ Арбитраж и жалобы
-                    </span>
-                    <span className="text-[10px] text-rose-400">Служба Безопасности</span>
-                  </div>
-
-                  {complaints.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">Жалоб от пассажиров на данный момент нет.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {complaints.map(c => {
-                        const complainee = users.find(u => u.id === c.userId);
-                        const isResolved = c.status === ComplaintStatus.Resolved;
-
-                        return (
-                          <div key={c.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-                            <div className="flex justify-between items-center bg-slate-950 px-3 py-1.5 rounded-lg text-[10px]">
-                              <span className="font-bold text-slate-300">Автор: {complainee?.fullName}</span>
-                              <span className={`px-1.5 py-0.5 rounded font-mono uppercase ${isResolved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                                {c.status}
-                              </span>
-                            </div>
-
-                            <p className="text-xs text-slate-300 leading-normal bg-slate-950/40 p-2.5 rounded border border-slate-950/60">
-                              <b>Суть конфликта:</b> {c.description}
-                            </p>
-
-                            {isResolved ? (
-                              <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded">
-                                <b>Решение администратора:</b> {c.adminNote}
-                              </div>
-                            ) : (
-                              <div className="flex flex-col sm:flex-row items-stretch gap-2">
-                                <input 
-                                  type="text" 
-                                  placeholder="Решение администратора перед закрытием"
-                                  value={adminNote[c.id] || ''}
-                                  onChange={(e) => setAdminNote({ ...adminNote, [c.id]: e.target.value })}
-                                  className="flex-1 bg-slate-950 border border-slate-800 text-xs px-3 py-1 text-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
-                                />
-                                <button
-                                  onClick={() => handleAdminResolveComplaint(c.id)}
-                                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-[10px] py-1 px-4 rounded-lg transition-colors shadow"
-                                >
-                                  Разрешить Спор
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* MODERATION SUBSECTION NEW: SUGGESTED CITIES AND DIRECTIONS */}
-                <div className="space-y-3">
-                  <div className="border-b border-slate-800 pb-1 flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      🌍 Новые города и направления от пользователей
-                    </span>
-                    <span className="text-[10px] bg-emerald-500/15 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/10">Требует одобрения</span>
-                  </div>
-
-                  {suggestedDirections.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">Нет предложенных направлений.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {suggestedDirections.map(s => {
-                        const isPending = s.status === 'pending';
-                        const isApproved = s.status === 'approved';
-                        const isRejected = s.status === 'rejected';
-
-                        return (
-                          <div key={s.id} className="bg-slate-900 border border-slate-850 rounded-xl p-4.5 space-y-3">
-                            <div className="flex justify-between items-center bg-slate-950 px-3 py-1.5 rounded-lg text-[10px] text-slate-300 font-semibold">
-                              <span className="flex items-center space-x-1.5">
-                                <span className={`w-1.5 h-1.5 rounded-full ${s.type === 'city' ? 'bg-sky-400' : 'bg-indigo-400'}`}></span>
-                                <span>Предложил(а): {s.userFullName}</span>
-                              </span>
-                              <span className={`px-2 py-0.5 rounded font-black text-[9px] uppercase ${
-                                isApproved ? 'bg-emerald-500/10 text-emerald-400' :
-                                isRejected ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'
-                              }`}>
-                                {isApproved ? 'Одобрено' : isRejected ? 'Отклонено' : 'На рассмотрении'}
-                              </span>
-                            </div>
-
-                            <div className="text-xs space-y-1.5 text-left text-slate-200">
-                              <div>
-                                <span className="text-slate-400 text-[10px] block uppercase font-mono">Тип объекта:</span>
-                                <span className="font-extrabold text-white text-[11px] bg-slate-800/60 px-2 py-0.5 rounded inline-block mt-0.5">
-                                  {s.type === 'city' ? '🌆 Новый Город' : '🛣️ Новое Направление (Маршрут)'}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-slate-400 text-[10px] block uppercase font-mono">Интерфейсный ярлык (RU/TJ):</span>
-                                <span className="font-bold text-emerald-450 text-emerald-400 text-sm block tracking-tight">
-                                  {s.nameRu} <span className="text-slate-400 font-light font-sans">({s.nameTj || 'без тадж.'})</span>
-                                </span>
-                              </div>
-                              <div className="bg-slate-950/60 border border-slate-900 p-2.5 rounded-lg">
-                                <span className="text-slate-450 text-[10px] block uppercase font-mono mb-1">Детальное описание направления (от автора):</span>
-                                <p className="text-[11.5px] text-slate-300 leading-relaxed italic pr-2 font-sans">
-                                  "{s.details}"
-                                </p>
-                              </div>
-                            </div>
-
-                            {isPending && (
-                              <div className="flex space-x-2 pt-1 justify-end">
-                                <button
-                                  onClick={() => handleAdminApproveDirection(s.id)}
-                                  className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-black text-[10.5px] py-1.5 px-4 rounded-lg transition-colors cursor-pointer shadow-md"
-                                >
-                                  Одобрить и добавить
-                                </button>
-                                <button
-                                  onClick={() => handleAdminRejectDirection(s.id)}
-                                  className="bg-slate-800 hover:bg-slate-700 hover:text-rose-450 text-slate-300 border border-slate-700 font-bold text-[10.5px] py-1.5 px-3 rounded-lg transition-all cursor-pointer"
-                                >
-                                  Отклонить
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* MODERATION SUBSECTION C: TOTAL SYSTEM USERS list */}
-                <div className="space-y-3">
-                  <div className="border-b border-slate-800 pb-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      👥 Сводный реестр пользователей Hamroh
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden">
-                    {users.map(u => (
-                      <div key={u.id} className="p-3 flex items-center justify-between text-xs">
-                        <div className="flex items-center space-x-2.5">
-                          <img src={u.avatarUrl} className="w-8 h-8 rounded-full border border-slate-800" alt="" />
-                          <div className="text-left">
-                            <span className="block font-bold text-white">{u.fullName} {u.role === UserRole.Admin ? '🛡️' : ''}</span>
-                            <span className="text-[10px] text-slate-400">{u.phone} • {u.role}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${u.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-500'}`}>
-                            {u.isActive ? 'Активен' : 'Заблокирован'}
-                          </span>
-                          
-                          {u.id !== 'admin1' && (
-                            <button
-                              onClick={() => handleAdminToggleUserActive(u.id)}
-                              className={`text-[9px] font-bold py-1 px-2.5 rounded transition-all ${
-                                u.isActive 
-                                  ? 'bg-rose-950/40 hover:bg-rose-950 text-rose-400' 
-                                  : 'bg-emerald-500 text-slate-950 hover:bg-emerald-600'
-                              }`}
-                            >
-                              {u.isActive ? 'Бан' : 'Разбанить'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
+              <AdminDashboard
+                users={users}
+                trips={trips}
+                complaints={complaints}
+                driverProfiles={driverProfiles}
+                vehicles={vehicles}
+                suggestedDirections={suggestedDirections}
+                adminNote={adminNote}
+                setAdminNote={setAdminNote}
+                onApproveDriver={handleAdminApproveDriver}
+                onRejectDriver={handleAdminRejectDriver}
+                onToggleUserActive={handleAdminToggleUserActive}
+                onResolveComplaint={handleAdminResolveComplaint}
+                onApproveDirection={handleAdminApproveDirection}
+                onRejectDirection={handleAdminRejectDirection}
+              />
             )}
           </div>
         </div>
