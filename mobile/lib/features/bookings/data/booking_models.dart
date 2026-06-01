@@ -2,6 +2,8 @@ class BookingDetails {
   const BookingDetails({
     required this.id,
     required this.status,
+    required this.driverId,
+    required this.passengerId,
     required this.fromCity,
     required this.toCity,
     required this.departureDate,
@@ -20,6 +22,8 @@ class BookingDetails {
 
   final String id;
   final String status;
+  final String driverId;
+  final String passengerId;
   final String fromCity;
   final String toCity;
   final String departureDate;
@@ -39,6 +43,8 @@ class BookingDetails {
     return BookingDetails(
       id: json['id'] as String,
       status: json['status'].toString(),
+      driverId: json['driverId'] as String,
+      passengerId: json['passengerId'] as String,
       fromCity: json['fromCity'] as String,
       toCity: json['toCity'] as String,
       departureDate: json['departureDate'] as String,

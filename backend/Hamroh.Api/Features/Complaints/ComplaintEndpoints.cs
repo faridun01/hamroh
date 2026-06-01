@@ -1,5 +1,6 @@
 using Hamroh.Api.Common;
 using Hamroh.Api.Data;
+using Hamroh.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hamroh.Api.Features.Complaints;
@@ -40,7 +41,7 @@ public static class ComplaintEndpoints
             BookingId = request.BookingId,
             Type = request.Type.Trim(),
             Description = request.Description.Trim(),
-            Status = "Open"
+            Status = ComplaintStatuses.Open
         };
 
         db.Complaints.Add(complaint);
@@ -76,7 +77,13 @@ public static class ComplaintEndpoints
             return Results.NotFound(ApiResponse<object>.Fail("Complaint not found"));
         }
 
-        complaint.Status = request.Status.Trim();
+        var nextStatus = request.Status.Trim();
+        if (!ComplaintStatuses.IsValid(nextStatus))
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Invalid complaint status"));
+        }
+
+        complaint.Status = nextStatus;
         await db.SaveChangesAsync(ct);
         return Results.Ok(ApiResponse<object>.Ok(new { complaint.Id, complaint.Status }));
     }

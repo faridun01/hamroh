@@ -43,13 +43,13 @@ public sealed class AcceptBookingCommandHandler(
             .FromSqlInterpolated($"SELECT * FROM \"Trips\" WHERE \"Id\" = {booking.TripId} FOR UPDATE")
             .SingleAsync(ct);
 
-        if (lockedTrip.AvailableSeats < booking.SeatsCount)
+        if (!TripBookingRules.IsBookable(lockedTrip, booking.SeatsCount, DateOnly.FromDateTime(DateTime.UtcNow)))
         {
             return CommandResult<AcceptBookingResponse>.Conflict("Not enough seats available");
         }
 
         lockedTrip.AvailableSeats -= booking.SeatsCount;
-        lockedTrip.Status = lockedTrip.AvailableSeats == 0 ? TripStatus.Full : TripStatus.Accepted;
+        lockedTrip.Status = TripBookingRules.StatusAfterSeatChange(lockedTrip.AvailableSeats);
         booking.Status = BookingStatus.Accepted;
 
         await db.SaveChangesAsync(ct);

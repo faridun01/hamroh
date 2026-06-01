@@ -19,7 +19,7 @@ class AuthRepository {
     });
   }
 
-  Future<void> login({required String phone, required String password}) async {
+  Future<AuthUser> login({required String phone, required String password}) async {
     final response = await _dio.post('/auth/login', data: {
       'phone': phone,
       'password': password,
@@ -29,6 +29,20 @@ class AuthRepository {
       accessToken: data['accessToken'] as String,
       refreshToken: data['refreshToken'] as String,
     );
+    return me();
+  }
+
+  Future<AuthUser> me() async {
+    final response = await _dio.get('/auth/me');
+    return AuthUser.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<void> logout() async {
+    try {
+      await _dio.post('/auth/logout');
+    } finally {
+      await _tokens.clear();
+    }
   }
 
   Future<void> resetPassword({
@@ -111,5 +125,37 @@ class AuthRepository {
         'insuranceDocumentKey': '',
       },
     });
+  }
+}
+
+class AuthUser {
+  const AuthUser({
+    required this.id,
+    required this.phone,
+    required this.firstName,
+    required this.lastName,
+    required this.role,
+    required this.language,
+    required this.city,
+  });
+
+  final String id;
+  final String phone;
+  final String firstName;
+  final String lastName;
+  final String role;
+  final String language;
+  final String city;
+
+  factory AuthUser.fromJson(Map<String, dynamic> json) {
+    return AuthUser(
+      id: json['id'] as String,
+      phone: json['phone'] as String,
+      firstName: json['firstName'] as String,
+      lastName: json['lastName'] as String,
+      role: json['role'].toString(),
+      language: json['language'] as String,
+      city: json['city'] as String? ?? '',
+    );
   }
 }

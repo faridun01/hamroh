@@ -30,24 +30,24 @@ class _TripSearchScreenState extends ConsumerState<TripSearchScreen> {
         Text('Найдите надежную поездку между городами.',
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 20),
-        DropdownButtonFormField(
+        DropdownButtonFormField<String>(
             initialValue: fromCity,
             decoration: const InputDecoration(labelText: 'Откуда'),
             items: _cities(),
             onChanged: (value) => setState(() => fromCity = value!)),
         const SizedBox(height: 12),
-        DropdownButtonFormField(
+        DropdownButtonFormField<String>(
             initialValue: toCity,
             decoration: const InputDecoration(labelText: 'Куда'),
             items: _cities(),
             onChanged: (value) => setState(() => toCity = value!)),
         const SizedBox(height: 12),
-        DropdownButtonFormField(
+        DropdownButtonFormField<int>(
             initialValue: seats,
             decoration: const InputDecoration(labelText: 'Пассажиры'),
             items: [1, 2, 3, 4]
                 .map((x) =>
-                    DropdownMenuItem(value: x, child: Text('$x мест(а)')))
+                    DropdownMenuItem<int>(value: x, child: Text('$x мест(а)')))
                 .toList(),
             onChanged: (value) => setState(() => seats = value!)),
         const SizedBox(height: 20),
@@ -110,7 +110,7 @@ class _TripSearchScreenState extends ConsumerState<TripSearchScreen> {
 
   List<DropdownMenuItem<String>> _cities() {
     return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog']
-        .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+        .map((city) => DropdownMenuItem<String>(value: city, child: Text(city)))
         .toList();
   }
 }

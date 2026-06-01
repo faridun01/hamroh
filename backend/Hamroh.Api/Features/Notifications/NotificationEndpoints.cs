@@ -11,6 +11,7 @@ public static class NotificationEndpoints
         var notifications = group.MapGroup("/notifications").RequireAuthorization();
         notifications.MapGet("", List);
         notifications.MapPost("/{notificationId:guid}/read", MarkRead);
+        notifications.MapPost("/devices", RegisterDevice);
         return group;
     }
 
@@ -44,6 +45,46 @@ public static class NotificationEndpoints
         await db.SaveChangesAsync(ct);
         return Results.Ok(ApiResponse<object>.Ok(new { notification.Id, notification.IsRead }));
     }
+
+    private static async Task<IResult> RegisterDevice(RegisterDevicePushTokenRequest request, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    {
+        var token = request.Token.Trim();
+        var platform = request.Platform.Trim();
+        if (string.IsNullOrWhiteSpace(token) || token.Length > 512)
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Valid push token is required"));
+        }
+
+        if (platform is not ("ios" or "android" or "web"))
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Platform must be ios, android, or web"));
+        }
+
+        var existing = await db.DevicePushTokens.SingleOrDefaultAsync(x => x.Token == token, ct);
+        if (existing is null)
+        {
+            existing = new Domain.DevicePushToken
+            {
+                UserId = currentUser.UserId,
+                Token = token,
+                Platform = platform,
+                DeviceId = request.DeviceId?.Trim() ?? "",
+                IsActive = true
+            };
+            db.DevicePushTokens.Add(existing);
+        }
+        else
+        {
+            existing.UserId = currentUser.UserId;
+            existing.Platform = platform;
+            existing.DeviceId = request.DeviceId?.Trim() ?? "";
+            existing.IsActive = true;
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(ApiResponse<object>.Ok(new { existing.Id, existing.Platform, existing.IsActive }));
+    }
 }
 
 public sealed record NotificationItem(Guid Id, string Title, string Message, string Type, Guid? BookingId, Guid? TripId, bool IsRead, DateTime CreatedAt);
+public sealed record RegisterDevicePushTokenRequest(string Token, string Platform, string? DeviceId);

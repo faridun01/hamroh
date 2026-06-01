@@ -51,13 +51,13 @@ class _CreatePassengerRequestScreenState
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 18),
-          DropdownButtonFormField(
+          DropdownButtonFormField<String>(
               initialValue: fromCity,
               decoration: const InputDecoration(labelText: 'Откуда'),
               items: _cities(),
               onChanged: (value) => setState(() => fromCity = value!)),
           const SizedBox(height: 12),
-          DropdownButtonFormField(
+          DropdownButtonFormField<String>(
               initialValue: toCity,
               decoration: const InputDecoration(labelText: 'Куда'),
               items: _cities(),
@@ -84,12 +84,12 @@ class _CreatePassengerRequestScreenState
                 'Точка высадки выбрана на карте', 40.2893, 69.6187),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField(
+          DropdownButtonFormField<int>(
               initialValue: seats,
               decoration: const InputDecoration(labelText: 'Места'),
               items: [1, 2, 3, 4]
                   .map((item) =>
-                      DropdownMenuItem(value: item, child: Text('$item')))
+                      DropdownMenuItem<int>(value: item, child: Text('$item')))
                   .toList(),
               onChanged: (value) => setState(() => seats = value!)),
           const SizedBox(height: 12),
@@ -206,7 +206,7 @@ class _CreatePassengerRequestScreenState
 
   List<DropdownMenuItem<String>> _cities() {
     return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog']
-        .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+        .map((city) => DropdownMenuItem<String>(value: city, child: Text(city)))
         .toList();
   }
 }

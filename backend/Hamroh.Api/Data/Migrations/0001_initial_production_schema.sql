@@ -184,6 +184,31 @@ CREATE TABLE IF NOT EXISTS "Notifications" (
     "IsRead" boolean NOT NULL DEFAULT false
 );
 
+CREATE TABLE IF NOT EXISTS "DevicePushTokens" (
+    "Id" uuid PRIMARY KEY,
+    "CreatedAt" timestamptz NOT NULL,
+    "UpdatedAt" timestamptz NOT NULL,
+    "IsDeleted" boolean NOT NULL DEFAULT false,
+    "UserId" uuid NOT NULL REFERENCES "Users"("Id"),
+    "Token" varchar(512) NOT NULL,
+    "Platform" varchar(32) NOT NULL,
+    "DeviceId" varchar(128) NOT NULL DEFAULT '',
+    "IsActive" boolean NOT NULL DEFAULT true
+);
+
+CREATE TABLE IF NOT EXISTS "UploadedDocuments" (
+    "Id" uuid PRIMARY KEY,
+    "CreatedAt" timestamptz NOT NULL,
+    "UpdatedAt" timestamptz NOT NULL,
+    "IsDeleted" boolean NOT NULL DEFAULT false,
+    "UserId" uuid NULL REFERENCES "Users"("Id"),
+    "StorageKey" varchar(256) NOT NULL,
+    "OriginalFileName" varchar(256) NOT NULL,
+    "ContentType" varchar(128) NOT NULL,
+    "SizeBytes" bigint NOT NULL,
+    "Purpose" varchar(64) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "Penalties" (
     "Id" uuid PRIMARY KEY,
     "CreatedAt" timestamptz NOT NULL,
@@ -268,6 +293,10 @@ CREATE INDEX IF NOT EXISTS "IX_PassengerRequests_OfferedTripId" ON "PassengerReq
 CREATE INDEX IF NOT EXISTS "IX_ChatMessages_Booking_CreatedAt" ON "ChatMessages"("BookingId", "CreatedAt");
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_Reviews_Booking_FromUser" ON "Reviews"("BookingId", "FromUserId");
 CREATE INDEX IF NOT EXISTS "IX_Notifications_User_Read_CreatedAt" ON "Notifications"("UserId", "IsRead", "CreatedAt");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_DevicePushTokens_Token" ON "DevicePushTokens"("Token");
+CREATE INDEX IF NOT EXISTS "IX_DevicePushTokens_User_Active" ON "DevicePushTokens"("UserId", "IsActive");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_UploadedDocuments_StorageKey" ON "UploadedDocuments"("StorageKey");
+CREATE INDEX IF NOT EXISTS "IX_UploadedDocuments_User_Purpose" ON "UploadedDocuments"("UserId", "Purpose");
 CREATE INDEX IF NOT EXISTS "IX_Penalties_Passenger_IsPaid" ON "Penalties"("PassengerId", "IsPaid");
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_Payments_PenaltyId" ON "Payments"("PenaltyId") WHERE "PenaltyId" IS NOT NULL;
 CREATE INDEX IF NOT EXISTS "IX_AuditLogs_Actor_CreatedAt" ON "AuditLogs"("ActorUserId", "CreatedAt");

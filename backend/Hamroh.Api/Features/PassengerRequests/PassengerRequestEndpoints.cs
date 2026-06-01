@@ -157,7 +157,7 @@ public static class PassengerRequestEndpoints
         var trip = await db.Trips.SingleOrDefaultAsync(x =>
             x.Id == request.TripId &&
             x.DriverId == currentUser.UserId &&
-            (x.Status == TripStatus.Published || x.Status == TripStatus.Accepted) &&
+            x.Status == TripStatus.Published &&
             x.AvailableSeats > 0, ct);
 
         if (trip is null)
@@ -220,7 +220,7 @@ public static class PassengerRequestEndpoints
 
         if (trip is null ||
             trip.DriverId != passengerRequest.AcceptedByDriverId ||
-            (trip.Status != TripStatus.Published && trip.Status != TripStatus.Accepted) ||
+            trip.Status != TripStatus.Published ||
             trip.AvailableSeats < passengerRequest.SeatsCount)
         {
             return Results.Conflict(ApiResponse<object>.Fail("Driver does not have enough available seats"));
@@ -237,7 +237,7 @@ public static class PassengerRequestEndpoints
         };
 
         trip.AvailableSeats -= passengerRequest.SeatsCount;
-        trip.Status = trip.AvailableSeats == 0 ? TripStatus.Full : TripStatus.Accepted;
+        trip.Status = TripBookingRules.StatusAfterSeatChange(trip.AvailableSeats);
         passengerRequest.PassengerConfirmedDriver = true;
         passengerRequest.Status = "Accepted";
         passengerRequest.BookingId = booking.Id;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hamroh_mobile/features/auth/data/auth_state.dart';
 import 'package:hamroh_mobile/features/auth/data/auth_repository.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -86,11 +87,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       error = null;
     });
     try {
-      await ref.read(authRepositoryProvider).login(
+      final user = await ref.read(authRepositoryProvider).login(
             phone: phoneController.text.trim(),
             password: passwordController.text,
           );
-      if (mounted) context.go('/passenger');
+      ref.invalidate(currentUserProvider);
+      if (mounted) context.go(homeRouteForRole(user.role));
     } catch (_) {
       if (mounted) {
         setState(() => error = _LoginText.of(context).loginError);

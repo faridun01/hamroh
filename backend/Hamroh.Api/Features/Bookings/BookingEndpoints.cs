@@ -73,6 +73,8 @@ public static class BookingEndpoints
         var item = new BookingDetails(
             booking.Id,
             booking.Status,
+            booking.Trip.DriverId,
+            booking.PassengerId,
             booking.Trip.FromCity,
             booking.Trip.ToCity,
             booking.Trip.DepartureDate,
@@ -110,6 +112,10 @@ public static class BookingEndpoints
         var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
         if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
         if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
+        if (!TripBookingRules.CanReject(booking.Status))
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Only pending bookings can be rejected"));
+        }
 
         booking.Status = BookingStatus.Rejected;
         await db.SaveChangesAsync(ct);
@@ -128,26 +134,36 @@ public static class BookingEndpoints
 
     private static async Task<IResult> CancelByPassenger(Guid bookingId, AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
     {
-        var booking = await db.Bookings.SingleOrDefaultAsync(x => x.Id == bookingId && x.PassengerId == currentUser.UserId, ct);
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId && x.PassengerId == currentUser.UserId, ct);
         if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
-        if (booking.Status is BookingStatus.Completed or BookingStatus.NoShowPassenger or BookingStatus.NoShowDriver)
+        if (!TripBookingRules.CanCancelByPassenger(booking.Status))
         {
-            return Results.BadRequest(ApiResponse<object>.Fail("Completed or no-show booking cannot be cancelled"));
+            return Results.BadRequest(ApiResponse<object>.Fail("Booking cannot be cancelled by passenger in its current status"));
         }
 
+        await ReleaseAcceptedSeatsAsync(db, booking, ct);
         booking.Status = BookingStatus.CancelledByPassenger;
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
     }
 
     private static async Task<IResult> CancelByDriver(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
     {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
         var booking = await db.Bookings.Include(x => x.Trip).SingleOrDefaultAsync(x => x.Id == bookingId, ct);
         if (booking is null) return Results.NotFound(ApiResponse<object>.Fail("Booking not found"));
         if (booking.Trip.DriverId != currentUser.UserId) return Results.Forbid();
+        if (!TripBookingRules.CanCancelByDriver(booking.Status))
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("Booking cannot be cancelled by driver in its current status"));
+        }
 
+        await ReleaseAcceptedSeatsAsync(db, booking, ct);
         booking.Status = BookingStatus.CancelledByDriver;
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
 
         await queue.EnqueueAsync(new NotificationMessage(
             booking.PassengerId,
@@ -159,6 +175,24 @@ public static class BookingEndpoints
         ), ct);
 
         return Results.Ok(ApiResponse<object>.Ok(new { booking.Id, booking.Status }));
+    }
+
+    private static async Task ReleaseAcceptedSeatsAsync(AppDbContext db, Booking booking, CancellationToken ct)
+    {
+        if (!TripBookingRules.ReleasesSeats(booking.Status))
+        {
+            return;
+        }
+
+        var lockedTrip = await db.Trips
+            .FromSqlInterpolated($"SELECT * FROM \"Trips\" WHERE \"Id\" = {booking.TripId} FOR UPDATE")
+            .SingleAsync(ct);
+
+        lockedTrip.AvailableSeats = Math.Min(lockedTrip.TotalSeats, lockedTrip.AvailableSeats + booking.SeatsCount);
+        if (lockedTrip.Status == TripStatus.Full && lockedTrip.AvailableSeats > 0)
+        {
+            lockedTrip.Status = TripStatus.Published;
+        }
     }
 
     private static async Task<IResult> ConfirmByPassenger(Guid bookingId, AppDbContext db, ICurrentUser currentUser, NotificationQueue queue, CancellationToken ct)
@@ -270,4 +304,4 @@ public static class BookingEndpoints
 
 public sealed record CreateBookingRequest(Guid TripId, int SeatsCount, string PassengerMessage);
 public sealed record BookingListItem(Guid Id, Guid TripId, BookingStatus Status, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice);
-public sealed record BookingDetails(Guid Id, BookingStatus Status, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice, string DriverName, string CarInfo, string? PlateNumber, string? DriverPhone, bool ContactsVisible, bool ChatAvailable, DateTime? PassengerFinalConfirmedAt, DateTime? DriverFinalConfirmedAt);
+public sealed record BookingDetails(Guid Id, BookingStatus Status, Guid DriverId, Guid PassengerId, string FromCity, string ToCity, DateOnly DepartureDate, TimeOnly DepartureTime, int SeatsCount, decimal TotalPrice, string DriverName, string CarInfo, string? PlateNumber, string? DriverPhone, bool ContactsVisible, bool ChatAvailable, DateTime? PassengerFinalConfirmedAt, DateTime? DriverFinalConfirmedAt);

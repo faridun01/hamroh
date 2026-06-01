@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hamroh_mobile/features/bookings/data/booking_models.dart';
 import 'package:hamroh_mobile/features/bookings/data/bookings_repository.dart';
+import 'package:hamroh_mobile/features/payments/data/payments_repository.dart';
 
 final bookingDetailsProvider = FutureProvider.family<BookingDetails, String>((ref, bookingId) {
   return ref.watch(bookingsRepositoryProvider).getBooking(bookingId);
@@ -44,7 +46,7 @@ class BookingDetailsScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: data.chatAvailable ? () {} : null,
+                      onPressed: data.chatAvailable ? () => context.go('/chat/${data.id}') : null,
                       icon: const Icon(Icons.chat_bubble_outline),
                       label: const Text('Чат'),
                     ),
@@ -73,6 +75,20 @@ class BookingDetailsScreen extends ConsumerWidget {
                   ),
                 ),
               ],
+              if (data.status == 'Pending' || data.status == 'Accepted') ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await ref.read(bookingsRepositoryProvider).cancelByPassenger(data.id);
+                      ref.invalidate(bookingDetailsProvider(bookingId));
+                    },
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text('Отменить бронь'),
+                  ),
+                ),
+              ],
               if (data.status == 'Accepted') ...[
                 const SizedBox(height: 12),
                 _InfoCard(
@@ -80,7 +96,32 @@ class BookingDetailsScreen extends ConsumerWidget {
                   subtitle: 'Пассажир: ${data.passengerFinalConfirmedAt == null ? 'ожидается' : 'точно едет'} · Водитель: ${data.driverFinalConfirmedAt == null ? 'ожидается' : 'точно едет'}',
                   icon: Icons.check_circle_outline,
                 ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    await ref.read(paymentsRepositoryProvider).markBookingCashPaid(data.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Оплата наличными отмечена.')));
+                    }
+                  },
+                  icon: const Icon(Icons.payments_outlined),
+                  label: const Text('Оплата наличными получена'),
+                ),
               ],
+              if (data.status == 'Completed') ...[
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/reviews/new?bookingId=${data.id}&toUserId=${data.driverId}'),
+                  icon: const Icon(Icons.star_outline),
+                  label: const Text('Оставить отзыв'),
+                ),
+              ],
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => context.go('/complaints/new?bookingId=${data.id}'),
+                icon: const Icon(Icons.report_outlined),
+                label: const Text('Пожаловаться'),
+              ),
             ],
           ),
         ),

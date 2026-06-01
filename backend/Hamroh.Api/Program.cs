@@ -8,11 +8,14 @@ using Hamroh.Api.Features.Auth;
 using Hamroh.Api.Features.Bookings;
 using Hamroh.Api.Features.Chat;
 using Hamroh.Api.Features.Complaints;
+using Hamroh.Api.Features.Drivers;
 using Hamroh.Api.Features.Notifications;
 using Hamroh.Api.Features.PassengerRequests;
 using Hamroh.Api.Features.Penalties;
+using Hamroh.Api.Features.Payments;
 using Hamroh.Api.Features.Reviews;
 using Hamroh.Api.Features.Trips;
+using Hamroh.Api.Features.Uploads;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -148,12 +151,15 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 app.UseCors("mobile");
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<ActiveUserMiddleware>();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 
 var v1 = app.MapGroup("/api/v1");
 v1.MapAuthEndpoints();
+v1.MapUploadEndpoints();
+v1.MapDriverEndpoints();
 v1.MapTripEndpoints();
 v1.MapBookingEndpoints();
 v1.MapPassengerRequestEndpoints();
@@ -162,7 +168,9 @@ v1.MapReviewEndpoints();
 v1.MapComplaintEndpoints();
 v1.MapNotificationEndpoints();
 v1.MapPenaltyEndpoints();
+v1.MapPaymentEndpoints();
 v1.MapAdminEndpoints();
+v1.MapAdminManagementEndpoints();
 
 app.MapHub<ChatHub>("/chat-hub");
 app.MapGrpcService<TripGrpcService>();

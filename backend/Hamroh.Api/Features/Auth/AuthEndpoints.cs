@@ -17,6 +17,8 @@ public static class AuthEndpoints
         auth.MapPost("/login", Login);
         auth.MapPost("/refresh", RefreshToken);
         auth.MapPost("/reset-password", ResetPassword);
+        auth.MapPost("/logout", Logout).RequireAuthorization();
+        auth.MapGet("/me", Me).RequireAuthorization();
         return group;
     }
 
@@ -216,6 +218,28 @@ public static class AuthEndpoints
         return Results.Ok(ApiResponse<object>.Ok(new { }, "Password reset"));
     }
 
+    private static async Task<IResult> Logout(AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    {
+        await db.UserRefreshTokens
+            .Where(x => x.UserId == currentUser.UserId && !x.IsRevoked)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsRevoked, true), ct);
+
+        return Results.Ok(ApiResponse<object>.Ok(new { }, "Logged out"));
+    }
+
+    private static async Task<IResult> Me(AppDbContext db, ICurrentUser currentUser, CancellationToken ct)
+    {
+        var user = await db.Users
+            .AsNoTracking()
+            .Where(x => x.Id == currentUser.UserId && x.IsActive)
+            .Select(x => new CurrentUserResponse(x.Id, x.Phone, x.FirstName, x.LastName, x.Role, x.Language, x.City))
+            .SingleOrDefaultAsync(ct);
+
+        return user is null
+            ? Results.Unauthorized()
+            : Results.Ok(ApiResponse<CurrentUserResponse>.Ok(user));
+    }
+
     private static bool IsValidRegistration(string phone, string password, string firstName, string lastName, string language, out string error)
     {
         if (string.IsNullOrWhiteSpace(phone) || phone.Length is < 8 or > 32)
@@ -251,3 +275,4 @@ public sealed record RegisterPassengerRequest(string Phone, string OtpCode, stri
 public sealed record RegisterDriverRequest(string Phone, string OtpCode, string Password, string FirstName, string LastName, Gender Gender, string? City, string Language, string ProfilePhotoKey, string LiveSelfieKey, string LicenseNumber, string PassportDocumentKey, string LicenseDocumentKey, VehicleDocumentRequest Vehicle);
 public sealed record VehicleDocumentRequest(string Brand, string Model, string Color, int Year, string PlateNumber, int Seats, string TechnicalPassportKey, string FrontPhotoKey, string BackPhotoKey, string InteriorPhotoKey, string InsuranceDocumentKey);
 public sealed record LoginRequest(string Phone, string Password);
+public sealed record CurrentUserResponse(Guid Id, string Phone, string FirstName, string LastName, UserRole Role, string Language, string City);

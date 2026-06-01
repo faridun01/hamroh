@@ -16,6 +16,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Complaint> Complaints => Set<Complaint>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<DevicePushToken> DevicePushTokens => Set<DevicePushToken>();
+    public DbSet<UploadedDocument> UploadedDocuments => Set<UploadedDocument>();
     public DbSet<Penalty> Penalties => Set<Penalty>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<City> Cities => Set<City>();
@@ -93,6 +95,25 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.HasIndex(x => new { x.UserId, x.IsRead, x.CreatedAt });
+        });
+
+        modelBuilder.Entity<DevicePushToken>(entity =>
+        {
+            entity.HasIndex(x => x.Token).IsUnique();
+            entity.HasIndex(x => new { x.UserId, x.IsActive });
+            entity.Property(x => x.Token).HasMaxLength(512);
+            entity.Property(x => x.Platform).HasMaxLength(32);
+            entity.Property(x => x.DeviceId).HasMaxLength(128);
+        });
+
+        modelBuilder.Entity<UploadedDocument>(entity =>
+        {
+            entity.HasIndex(x => x.StorageKey).IsUnique();
+            entity.HasIndex(x => new { x.UserId, x.Purpose });
+            entity.Property(x => x.StorageKey).HasMaxLength(256);
+            entity.Property(x => x.OriginalFileName).HasMaxLength(256);
+            entity.Property(x => x.ContentType).HasMaxLength(128);
+            entity.Property(x => x.Purpose).HasMaxLength(64);
         });
 
         modelBuilder.Entity<ChatMessage>(entity =>

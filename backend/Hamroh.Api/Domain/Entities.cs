@@ -3,7 +3,7 @@ namespace Hamroh.Api.Domain;
 public enum UserRole { Passenger, Driver, Admin, Moderator }
 public enum Gender { Male, Female }
 public enum VerificationStatus { PendingVerification, Verified, Rejected, Suspended, Banned }
-public enum TripStatus { Draft, Published, Full, BookingPending, Accepted, Started, Completed, Cancelled, NoShowPassenger, NoShowDriver, Disputed, Blocked }
+public enum TripStatus { Draft, Published, Full, Started, Completed, Cancelled, Disputed, Blocked }
 public enum BookingStatus { Pending, Accepted, Rejected, CancelledByPassenger, CancelledByDriver, Completed, NoShowPassenger, NoShowDriver, Disputed }
 
 public abstract class Entity
@@ -175,6 +175,25 @@ public sealed class Notification : Entity
     public Guid? BookingId { get; set; }
     public Guid? TripId { get; set; }
     public bool IsRead { get; set; }
+}
+
+public sealed class DevicePushToken : Entity
+{
+    public Guid UserId { get; set; }
+    public string Token { get; set; } = "";
+    public string Platform { get; set; } = "";
+    public string DeviceId { get; set; } = "";
+    public bool IsActive { get; set; } = true;
+}
+
+public sealed class UploadedDocument : Entity
+{
+    public Guid? UserId { get; set; }
+    public string StorageKey { get; set; } = "";
+    public string OriginalFileName { get; set; } = "";
+    public string ContentType { get; set; } = "";
+    public long SizeBytes { get; set; }
+    public string Purpose { get; set; } = "";
 }
 
 public sealed class Penalty : Entity

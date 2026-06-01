@@ -33,9 +33,14 @@ public sealed class CreateBookingCommandHandler(
         }
 
         var trip = await db.Trips.AsNoTracking().SingleOrDefaultAsync(x => x.Id == request.TripId, ct);
-        if (trip is null || trip.Status != TripStatus.Published || trip.AvailableSeats < request.SeatsCount)
+        if (trip is null || !TripBookingRules.IsBookable(trip, request.SeatsCount, DateOnly.FromDateTime(DateTime.UtcNow)))
         {
             return CommandResult<CreateBookingResponse>.BadRequest("Trip is unavailable");
+        }
+
+        if (trip.DriverId == request.PassengerId)
+        {
+            return CommandResult<CreateBookingResponse>.BadRequest("Driver cannot book their own trip");
         }
 
         var booking = new Booking

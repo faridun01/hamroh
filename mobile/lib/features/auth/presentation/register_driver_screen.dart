@@ -117,12 +117,13 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
                 decoration:
                     const InputDecoration(labelText: 'Повторите пароль')),
             const SizedBox(height: 12),
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               initialValue: gender,
               decoration: const InputDecoration(labelText: 'Пол'),
               items: const [
-                DropdownMenuItem(value: 'Male', child: Text('Мужчина')),
-                DropdownMenuItem(value: 'Female', child: Text('Женщина')),
+                DropdownMenuItem<String>(value: 'Male', child: Text('Мужчина')),
+                DropdownMenuItem<String>(
+                    value: 'Female', child: Text('Женщина')),
               ],
               onChanged: (value) => setState(() => gender = value!),
             ),
@@ -160,12 +161,12 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
                 controller: plateNumber,
                 decoration: const InputDecoration(labelText: 'Госномер')),
             const SizedBox(height: 12),
-            DropdownButtonFormField(
+            DropdownButtonFormField<int>(
               initialValue: seats,
               decoration: const InputDecoration(labelText: 'Количество мест'),
               items: [1, 2, 3, 4, 5, 6, 7, 8]
                   .map((item) =>
-                      DropdownMenuItem(value: item, child: Text('$item')))
+                      DropdownMenuItem<int>(value: item, child: Text('$item')))
                   .toList(),
               onChanged: (value) => setState(() => seats = value!),
             ),

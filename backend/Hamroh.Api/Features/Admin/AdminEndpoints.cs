@@ -16,6 +16,7 @@ public static class AdminEndpoints
         admin.MapPost("/drivers/{driverUserId:guid}/reject", RejectDriver);
         admin.MapPost("/drivers/{driverUserId:guid}/suspend", SuspendDriver);
         admin.MapPost("/drivers/{driverUserId:guid}/ban", BanDriver).RequireAuthorization("AdminOnly");
+        admin.MapGet("/vehicles/pending", PendingVehicles);
         admin.MapPost("/vehicles/{vehicleId:guid}/approve", ApproveVehicle);
         admin.MapPost("/vehicles/{vehicleId:guid}/reject", RejectVehicle);
         return group;
@@ -49,6 +50,41 @@ public static class AdminEndpoints
             .ToListAsync(ct);
 
         return Results.Ok(ApiResponse<PageResult<PendingDriverItem>>.Ok(new PageResult<PendingDriverItem>(items, page, pageSize, total)));
+    }
+
+    private static async Task<IResult> PendingVehicles(int page, int pageSize, AppDbContext db, CancellationToken ct)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+        var query = db.Vehicles.AsNoTracking()
+            .Include(x => x.Driver)
+            .Where(x => x.VerificationStatus == VerificationStatus.PendingVerification);
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderBy(x => x.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new PendingVehicleItem(
+                x.Id,
+                x.DriverId,
+                x.Driver.FirstName + " " + x.Driver.LastName,
+                x.Driver.Phone,
+                x.Brand,
+                x.Model,
+                x.Color,
+                x.Year,
+                x.PlateNumber,
+                x.Seats,
+                x.TechnicalPassportKey,
+                x.FrontPhotoKey,
+                x.BackPhotoKey,
+                x.InteriorPhotoKey,
+                x.InsuranceDocumentKey,
+                x.CreatedAt))
+            .ToListAsync(ct);
+
+        return Results.Ok(ApiResponse<PageResult<PendingVehicleItem>>.Ok(new PageResult<PendingVehicleItem>(items, page, pageSize, total)));
     }
 
     private static Task<IResult> ApproveDriver(Guid driverUserId, AppDbContext db, ICurrentUser currentUser, AuditLogger audit, NotificationQueue queue, CancellationToken ct)
@@ -130,3 +166,4 @@ public static class AdminEndpoints
 
 public sealed record ModerationReasonRequest(string Reason);
 public sealed record PendingDriverItem(Guid UserId, string FirstName, string LastName, string Phone, string City, string LicenseNumber, string ProfilePhotoKey, string LiveSelfieKey, string PassportDocumentKey, string LicenseDocumentKey, DateTime SubmittedAt);
+public sealed record PendingVehicleItem(Guid Id, Guid DriverId, string DriverName, string DriverPhone, string Brand, string Model, string Color, int Year, string PlateNumber, int Seats, string TechnicalPassportKey, string FrontPhotoKey, string BackPhotoKey, string InteriorPhotoKey, string InsuranceDocumentKey, DateTime SubmittedAt);

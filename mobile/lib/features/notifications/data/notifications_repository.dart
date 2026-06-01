@@ -20,6 +20,18 @@ class NotificationsRepository {
   Future<void> markRead(String notificationId) async {
     await _dio.post('/notifications/$notificationId/read');
   }
+
+  Future<void> registerDevice({
+    required String token,
+    required String platform,
+    String? deviceId,
+  }) async {
+    await _dio.post('/notifications/devices', data: {
+      'token': token,
+      'platform': platform,
+      'deviceId': deviceId,
+    });
+  }
 }
 
 class NotificationItem {

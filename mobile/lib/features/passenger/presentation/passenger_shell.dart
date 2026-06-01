@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hamroh_mobile/features/bookings/presentation/my_bookings_screen.dart';
 import 'package:hamroh_mobile/features/notifications/presentation/notifications_screen.dart';
 import 'package:hamroh_mobile/features/passenger_requests/presentation/create_passenger_request_screen.dart';
+import 'package:hamroh_mobile/features/penalties/presentation/penalties_screen.dart';
 import 'package:hamroh_mobile/features/trips/presentation/trip_search_screen.dart';
 
 class PassengerShell extends StatefulWidget {
@@ -21,7 +22,7 @@ class _PassengerShellState extends State<PassengerShell> {
       const MyBookingsScreen(),
       const CreatePassengerRequestScreen(),
       const NotificationsScreen(),
-      const Center(child: Text('Профиль')),
+      const PenaltiesScreen(),
     ];
 
     return Scaffold(
@@ -34,7 +35,7 @@ class _PassengerShellState extends State<PassengerShell> {
           NavigationDestination(icon: Icon(Icons.route), label: 'Поездки'),
           NavigationDestination(icon: Icon(Icons.add_location_alt_outlined), label: 'Заявка'),
           NavigationDestination(icon: Icon(Icons.notifications_none), label: 'Уведомления'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Профиль'),
+          NavigationDestination(icon: Icon(Icons.payments_outlined), label: 'Штрафы'),
         ],
       ),
     );

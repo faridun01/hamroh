@@ -101,23 +101,24 @@ class _RegisterPassengerScreenState
                 decoration:
                     const InputDecoration(labelText: 'Повторите пароль')),
             const SizedBox(height: 12),
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               initialValue: gender,
               decoration: const InputDecoration(labelText: 'Пол'),
               items: const [
-                DropdownMenuItem(value: 'Male', child: Text('Мужчина')),
-                DropdownMenuItem(value: 'Female', child: Text('Женщина')),
+                DropdownMenuItem<String>(value: 'Male', child: Text('Мужчина')),
+                DropdownMenuItem<String>(
+                    value: 'Female', child: Text('Женщина')),
               ],
               onChanged: (value) => setState(() => gender = value!),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               initialValue: language,
               decoration: const InputDecoration(labelText: 'Язык'),
               items: const [
-                DropdownMenuItem(value: 'ru', child: Text('Русский')),
-                DropdownMenuItem(value: 'tg', child: Text('Тоҷикӣ')),
-                DropdownMenuItem(value: 'en', child: Text('English')),
+                DropdownMenuItem<String>(value: 'ru', child: Text('Русский')),
+                DropdownMenuItem<String>(value: 'tg', child: Text('Тоҷикӣ')),
+                DropdownMenuItem<String>(value: 'en', child: Text('English')),
               ],
               onChanged: (value) => setState(() => language = value!),
             ),

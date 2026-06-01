@@ -40,7 +40,23 @@ class BookingsRepository {
     await _dio.post('/bookings/$bookingId/confirm-by-passenger');
   }
 
+  Future<void> cancelByPassenger(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/cancel-by-passenger');
+  }
+
   Future<void> confirmByDriver(String bookingId) async {
     await _dio.post('/bookings/$bookingId/confirm-by-driver');
+  }
+
+  Future<void> accept(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/accept');
+  }
+
+  Future<void> reject(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/reject');
+  }
+
+  Future<void> cancelByDriver(String bookingId) async {
+    await _dio.post('/bookings/$bookingId/cancel-by-driver');
   }
 }
