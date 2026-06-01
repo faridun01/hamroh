@@ -7,10 +7,12 @@ class RegisterPassengerScreen extends ConsumerStatefulWidget {
   const RegisterPassengerScreen({super.key});
 
   @override
-  ConsumerState<RegisterPassengerScreen> createState() => _RegisterPassengerScreenState();
+  ConsumerState<RegisterPassengerScreen> createState() =>
+      _RegisterPassengerScreenState();
 }
 
-class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScreen> {
+class _RegisterPassengerScreenState
+    extends ConsumerState<RegisterPassengerScreen> {
   final firstName = TextEditingController();
   final lastName = TextEditingController();
   final phone = TextEditingController(text: '+992');
@@ -51,20 +53,34 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
           children: [
-            Text('Создать аккаунт пассажира', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Создать аккаунт пассажира',
+                style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            Text('Пассажир регистрируется сразу, без подтверждения администратора.', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+                'Пассажир регистрируется сразу, без подтверждения администратора.',
+                style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 18),
-            TextField(controller: firstName, decoration: const InputDecoration(labelText: 'Имя')),
+            TextField(
+                controller: firstName,
+                decoration: const InputDecoration(labelText: 'Имя')),
             const SizedBox(height: 12),
-            TextField(controller: lastName, decoration: const InputDecoration(labelText: 'Фамилия')),
+            TextField(
+                controller: lastName,
+                decoration: const InputDecoration(labelText: 'Фамилия')),
             const SizedBox(height: 12),
-            TextField(controller: phone, onChanged: _keepCountryCode, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Телефон')),
+            TextField(
+                controller: phone,
+                onChanged: _keepCountryCode,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Телефон')),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: TextField(controller: otpCode, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'SMS код')),
+                  child: TextField(
+                      controller: otpCode,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'SMS код')),
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton(
@@ -74,12 +90,19 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
               ],
             ),
             const SizedBox(height: 12),
-            TextField(controller: password, obscureText: true, decoration: const InputDecoration(labelText: 'Пароль')),
+            TextField(
+                controller: password,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Пароль')),
             const SizedBox(height: 12),
-            TextField(controller: confirmPassword, obscureText: true, decoration: const InputDecoration(labelText: 'Повторите пароль')),
+            TextField(
+                controller: confirmPassword,
+                obscureText: true,
+                decoration:
+                    const InputDecoration(labelText: 'Повторите пароль')),
             const SizedBox(height: 12),
             DropdownButtonFormField(
-              value: gender,
+              initialValue: gender,
               decoration: const InputDecoration(labelText: 'Пол'),
               items: const [
                 DropdownMenuItem(value: 'Male', child: Text('Мужчина')),
@@ -89,7 +112,7 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField(
-              value: language,
+              initialValue: language,
               decoration: const InputDecoration(labelText: 'Язык'),
               items: const [
                 DropdownMenuItem(value: 'ru', child: Text('Русский')),
@@ -100,7 +123,8 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
             ),
             if (error != null) ...[
               const SizedBox(height: 12),
-              Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
           ],
         ),
@@ -109,7 +133,9 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
         minimum: const EdgeInsets.all(16),
         child: ElevatedButton(
           onPressed: loading ? null : _submit,
-          child: loading ? const CircularProgressIndicator.adaptive() : const Text('Зарегистрироваться'),
+          child: loading
+              ? const CircularProgressIndicator.adaptive()
+              : const Text('Зарегистрироваться'),
         ),
       ),
     );
@@ -121,7 +147,10 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
       return;
     }
 
-    if (firstName.text.trim().isEmpty || lastName.text.trim().isEmpty || otpCode.text.trim().isEmpty || password.text.isEmpty) {
+    if (firstName.text.trim().isEmpty ||
+        lastName.text.trim().isEmpty ||
+        otpCode.text.trim().isEmpty ||
+        password.text.isEmpty) {
       setState(() => error = 'Заполните обязательные поля.');
       return;
     }
@@ -143,7 +172,9 @@ class _RegisterPassengerScreenState extends ConsumerState<RegisterPassengerScree
           );
       if (mounted) context.go('/passenger');
     } catch (_) {
-      if (mounted) setState(() => error = 'Не удалось зарегистрироваться. Проверьте данные.');
+      if (mounted)
+        setState(
+            () => error = 'Не удалось зарегистрироваться. Проверьте данные.');
     } finally {
       if (mounted) setState(() => loading = false);
     }

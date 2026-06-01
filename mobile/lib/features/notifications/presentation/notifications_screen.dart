@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hamroh_mobile/core/network/page_result.dart';
 import 'package:hamroh_mobile/features/notifications/data/notifications_repository.dart';
 
-final notificationsProvider = FutureProvider<PageResult<NotificationItem>>((ref) {
+final notificationsProvider =
+    FutureProvider<PageResult<NotificationItem>>((ref) {
   return ref.watch(notificationsRepositoryProvider).list();
 });
 
@@ -17,7 +18,8 @@ class NotificationsScreen extends ConsumerWidget {
 
     return notifications.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => _ErrorView(onRetry: () => ref.invalidate(notificationsProvider)),
+      error: (_, __) =>
+          _ErrorView(onRetry: () => ref.invalidate(notificationsProvider)),
       data: (data) {
         if (data.items.isEmpty) {
           return const Center(child: Text('Уведомлений пока нет.'));
@@ -26,15 +28,19 @@ class NotificationsScreen extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            Text('Уведомления', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Уведомления',
+                style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 16),
             ...data.items.map((item) => Card(
                   elevation: 0,
-                  color: item.isRead ? Colors.white : const Color(0xFFD1FAE5).withOpacity(0.55),
+                  color: item.isRead
+                      ? Colors.white
+                      : const Color(0xFFD1FAE5).withValues(alpha: 0.55),
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     onTap: () => _openNotification(context, ref, item),
-                    title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    title: Text(item.title,
+                        style: const TextStyle(fontWeight: FontWeight.w800)),
                     subtitle: Text(item.message),
                     trailing: const Icon(Icons.chevron_right),
                   ),
@@ -45,7 +51,8 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openNotification(BuildContext context, WidgetRef ref, NotificationItem item) async {
+  Future<void> _openNotification(
+      BuildContext context, WidgetRef ref, NotificationItem item) async {
     await ref.read(notificationsRepositoryProvider).markRead(item.id);
     if (context.mounted) {
       if (item.type == 'new_message' && item.bookingId != null) {

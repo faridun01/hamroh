@@ -7,10 +7,12 @@ class CreatePassengerRequestScreen extends ConsumerStatefulWidget {
   const CreatePassengerRequestScreen({super.key});
 
   @override
-  ConsumerState<CreatePassengerRequestScreen> createState() => _CreatePassengerRequestScreenState();
+  ConsumerState<CreatePassengerRequestScreen> createState() =>
+      _CreatePassengerRequestScreenState();
 }
 
-class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRequestScreen> {
+class _CreatePassengerRequestScreenState
+    extends ConsumerState<CreatePassengerRequestScreen> {
   String fromCity = 'Dushanbe';
   String toCity = 'Khujand';
   final pickupAddress = TextEditingController();
@@ -41,32 +43,55 @@ class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRe
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Заявка на поездку', style: Theme.of(context).textTheme.headlineSmall),
+          Text('Заявка на поездку',
+              style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text(
             'Укажите точный адрес посадки. Можно использовать текущую локацию или выбрать точку на карте.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 18),
-          DropdownButtonFormField(value: fromCity, decoration: const InputDecoration(labelText: 'Откуда'), items: _cities(), onChanged: (value) => setState(() => fromCity = value!)),
+          DropdownButtonFormField(
+              initialValue: fromCity,
+              decoration: const InputDecoration(labelText: 'Откуда'),
+              items: _cities(),
+              onChanged: (value) => setState(() => fromCity = value!)),
           const SizedBox(height: 12),
-          DropdownButtonFormField(value: toCity, decoration: const InputDecoration(labelText: 'Куда'), items: _cities(), onChanged: (value) => setState(() => toCity = value!)),
+          DropdownButtonFormField(
+              initialValue: toCity,
+              decoration: const InputDecoration(labelText: 'Куда'),
+              items: _cities(),
+              onChanged: (value) => setState(() => toCity = value!)),
           const SizedBox(height: 12),
-          TextField(controller: pickupAddress, decoration: const InputDecoration(labelText: 'Точный адрес посадки')),
+          TextField(
+              controller: pickupAddress,
+              decoration:
+                  const InputDecoration(labelText: 'Точный адрес посадки')),
           const SizedBox(height: 8),
           _LocationActions(
             onUseCurrent: () => _useCurrentLocation(forPickup: true),
-            onPickMap: () => _setPickupLocation('Точка посадки выбрана на карте', 38.5731, 68.7864),
+            onPickMap: () => _setPickupLocation(
+                'Точка посадки выбрана на карте', 38.5731, 68.7864),
           ),
           const SizedBox(height: 12),
-          TextField(controller: dropoffPoint, decoration: const InputDecoration(labelText: 'Точка высадки')),
+          TextField(
+              controller: dropoffPoint,
+              decoration: const InputDecoration(labelText: 'Точка высадки')),
           const SizedBox(height: 8),
           _LocationActions(
             onUseCurrent: () => _useCurrentLocation(forPickup: false),
-            onPickMap: () => _setDropoffLocation('Точка высадки выбрана на карте', 40.2893, 69.6187),
+            onPickMap: () => _setDropoffLocation(
+                'Точка высадки выбрана на карте', 40.2893, 69.6187),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField(value: seats, decoration: const InputDecoration(labelText: 'Места'), items: [1, 2, 3, 4].map((item) => DropdownMenuItem(value: item, child: Text('$item'))).toList(), onChanged: (value) => setState(() => seats = value!)),
+          DropdownButtonFormField(
+              initialValue: seats,
+              decoration: const InputDecoration(labelText: 'Места'),
+              items: [1, 2, 3, 4]
+                  .map((item) =>
+                      DropdownMenuItem(value: item, child: Text('$item')))
+                  .toList(),
+              onChanged: (value) => setState(() => seats = value!)),
           const SizedBox(height: 12),
           SwitchListTile(
             value: hasBaggage,
@@ -75,15 +100,29 @@ class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRe
             contentPadding: EdgeInsets.zero,
           ),
           const SizedBox(height: 12),
-          TextField(controller: price, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Предлагаемая цена')),
+          TextField(
+              controller: price,
+              keyboardType: TextInputType.number,
+              decoration:
+                  const InputDecoration(labelText: 'Предлагаемая цена')),
           const SizedBox(height: 12),
-          TextField(controller: comment, minLines: 3, maxLines: 5, decoration: const InputDecoration(labelText: 'Комментарий')),
+          TextField(
+              controller: comment,
+              minLines: 3,
+              maxLines: 5,
+              decoration: const InputDecoration(labelText: 'Комментарий')),
           if (message != null) ...[
             const SizedBox(height: 12),
-            Text(message!, style: const TextStyle(color: Color(0xFF047857), fontWeight: FontWeight.w700)),
+            Text(message!,
+                style: const TextStyle(
+                    color: Color(0xFF047857), fontWeight: FontWeight.w700)),
           ],
           const SizedBox(height: 20),
-          ElevatedButton(onPressed: loading ? null : _submit, child: loading ? const CircularProgressIndicator.adaptive() : const Text('Опубликовать заявку')),
+          ElevatedButton(
+              onPressed: loading ? null : _submit,
+              child: loading
+                  ? const CircularProgressIndicator.adaptive()
+                  : const Text('Опубликовать заявку')),
         ],
       ),
     );
@@ -112,14 +151,18 @@ class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRe
     try {
       final point = await ref.read(locationServiceProvider).currentPosition();
       if (forPickup) {
-        _setPickupLocation('Моя текущая локация', point.latitude, point.longitude);
+        _setPickupLocation(
+            'Моя текущая локация', point.latitude, point.longitude);
       } else {
-        _setDropoffLocation('Моя текущая локация', point.latitude, point.longitude);
+        _setDropoffLocation(
+            'Моя текущая локация', point.latitude, point.longitude);
       }
     } on LocationException catch (error) {
       if (mounted) setState(() => message = error.message);
     } catch (_) {
-      if (mounted) setState(() => message = 'Не удалось получить локацию. Выберите точку на карте или введите адрес вручную.');
+      if (mounted)
+        setState(() => message =
+            'Не удалось получить локацию. Выберите точку на карте или введите адрес вручную.');
     }
   }
 
@@ -135,7 +178,8 @@ class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRe
     });
     try {
       final now = DateTime.now();
-      final date = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final date =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       await ref.read(passengerRequestsRepositoryProvider).create(
             fromCity: fromCity,
             toCity: toCity,
@@ -161,7 +205,9 @@ class _CreatePassengerRequestScreenState extends ConsumerState<CreatePassengerRe
   }
 
   List<DropdownMenuItem<String>> _cities() {
-    return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog'].map((city) => DropdownMenuItem(value: city, child: Text(city))).toList();
+    return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog']
+        .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+        .toList();
   }
 }
 

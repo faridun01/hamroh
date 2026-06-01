@@ -27,24 +27,47 @@ class _TripSearchScreenState extends ConsumerState<TripSearchScreen> {
       children: [
         Text('Куда едем?', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8),
-        Text('Найдите надежную поездку между городами.', style: Theme.of(context).textTheme.bodySmall),
+        Text('Найдите надежную поездку между городами.',
+            style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 20),
-        DropdownButtonFormField(value: fromCity, decoration: const InputDecoration(labelText: 'Откуда'), items: _cities(), onChanged: (value) => setState(() => fromCity = value!)),
+        DropdownButtonFormField(
+            initialValue: fromCity,
+            decoration: const InputDecoration(labelText: 'Откуда'),
+            items: _cities(),
+            onChanged: (value) => setState(() => fromCity = value!)),
         const SizedBox(height: 12),
-        DropdownButtonFormField(value: toCity, decoration: const InputDecoration(labelText: 'Куда'), items: _cities(), onChanged: (value) => setState(() => toCity = value!)),
+        DropdownButtonFormField(
+            initialValue: toCity,
+            decoration: const InputDecoration(labelText: 'Куда'),
+            items: _cities(),
+            onChanged: (value) => setState(() => toCity = value!)),
         const SizedBox(height: 12),
-        DropdownButtonFormField(value: seats, decoration: const InputDecoration(labelText: 'Пассажиры'), items: [1, 2, 3, 4].map((x) => DropdownMenuItem(value: x, child: Text('$x мест(а)'))).toList(), onChanged: (value) => setState(() => seats = value!)),
+        DropdownButtonFormField(
+            initialValue: seats,
+            decoration: const InputDecoration(labelText: 'Пассажиры'),
+            items: [1, 2, 3, 4]
+                .map((x) =>
+                    DropdownMenuItem(value: x, child: Text('$x мест(а)')))
+                .toList(),
+            onChanged: (value) => setState(() => seats = value!)),
         const SizedBox(height: 20),
-        ElevatedButton(onPressed: loading ? null : _search, child: loading ? const CircularProgressIndicator.adaptive() : const Text('Найти поездку')),
+        ElevatedButton(
+            onPressed: loading ? null : _search,
+            child: loading
+                ? const CircularProgressIndicator.adaptive()
+                : const Text('Найти поездку')),
         if (error != null) ...[
           const SizedBox(height: 14),
           _ErrorBox(message: error!, onRetry: _search),
         ],
         if (trips.isNotEmpty) ...[
           const SizedBox(height: 22),
-          Text('Доступные поездки', style: Theme.of(context).textTheme.titleLarge),
+          Text('Доступные поездки',
+              style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
-          ...trips.where((trip) => trip.availableSeats >= seats).map((trip) => _TripCard(trip: trip)),
+          ...trips
+              .where((trip) => trip.availableSeats >= seats)
+              .map((trip) => _TripCard(trip: trip)),
         ],
       ],
     );
@@ -71,7 +94,9 @@ class _TripSearchScreenState extends ConsumerState<TripSearchScreen> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => error = 'Не удалось загрузить поездки. Проверьте интернет и попробуйте еще раз.');
+      if (mounted)
+        setState(() => error =
+            'Не удалось загрузить поездки. Проверьте интернет и попробуйте еще раз.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -84,7 +109,9 @@ class _TripSearchScreenState extends ConsumerState<TripSearchScreen> {
   }
 
   List<DropdownMenuItem<String>> _cities() {
-    return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog'].map((city) => DropdownMenuItem(value: city, child: Text(city))).toList();
+    return ['Dushanbe', 'Khujand', 'Bokhtar', 'Kulob', 'Khorog']
+        .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+        .toList();
   }
 }
 
@@ -110,16 +137,24 @@ class _TripCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(child: Text('${trip.fromCity} -> ${trip.toCity}', style: Theme.of(context).textTheme.titleMedium)),
-                  Text('${trip.pricePerSeat} смн', style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF047857))),
+                  Expanded(
+                      child: Text('${trip.fromCity} -> ${trip.toCity}',
+                          style: Theme.of(context).textTheme.titleMedium)),
+                  Text('${trip.pricePerSeat} смн',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF047857))),
                 ],
               ),
               const SizedBox(height: 8),
-              Text('${trip.departureDate} · ${trip.departureTime}', style: Theme.of(context).textTheme.bodySmall),
+              Text('${trip.departureDate} · ${trip.departureTime}',
+                  style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 10),
-              Text('${trip.driverName} · ${trip.vehicle}', style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text('${trip.driverName} · ${trip.vehicle}',
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              Text('${trip.availableSeats} свободных мест', style: Theme.of(context).textTheme.bodySmall),
+              Text('${trip.availableSeats} свободных мест',
+                  style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),
@@ -138,7 +173,8 @@ class _ErrorBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(18)),
       child: Row(
         children: [
           Expanded(child: Text(message)),
