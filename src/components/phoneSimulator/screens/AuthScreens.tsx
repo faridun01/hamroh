@@ -117,21 +117,21 @@ export default function AuthScreens({
     if (screen === 'welcome') {
       return (
         <Shell>
-          <div className="flex-1 h-full overflow-hidden bg-[#F8FAFC] px-6 pt-6 pb-6 flex flex-col">
-            <div className="flex justify-center">
+          <div className="flex-1 min-h-0 overflow-y-auto bg-[#F8FAFC] px-6 pt-6 pb-10 flex flex-col">
+            <div className="flex justify-center shrink-0">
               <button onClick={() => setScreen('lang')} className="h-11 px-5 rounded-full bg-white shadow-[0_8px_22px_rgba(15,23,42,0.10)] border border-[#E2E8F0] flex items-center gap-3 text-[#0F172A] font-extrabold active:scale-[0.98] transition-all">
                 <Globe2 className="w-5 h-5 text-[#047857]" />
                 {t.languageName}
               </button>
             </div>
-            <div className="mt-14 flex justify-center">
+            <div className="mt-10 flex justify-center shrink-0">
               <HamrohLogo />
             </div>
-            <div className="mt-16 text-center">
-              <h1 className="text-[32px] leading-[1.14] font-black tracking-tight text-[#047857]">{t.welcomeTitle}</h1>
-              <p className="text-[#334155] mt-5 text-[17px] leading-7 max-w-75 mx-auto">{t.welcome}</p>
+            <div className="mt-10 text-center min-w-0">
+              <h1 className="text-[30px] leading-[1.12] font-black tracking-tight text-[#047857] break-words">{t.welcomeTitle}</h1>
+              <p className="text-[#334155] mt-5 text-[17px] leading-7 max-w-75 mx-auto break-words">{t.welcome}</p>
             </div>
-            <div className="mt-auto space-y-4">
+            <div className="mt-auto pt-8 space-y-4 shrink-0">
               <button onClick={() => setScreen('login')} className="w-full h-14 rounded-[18px] bg-[#047857] text-white font-extrabold text-xl shadow-[0_12px_22px_rgba(4,120,87,0.18)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
                 {t.login}
                 <ChevronRight className="w-7 h-7" />
@@ -257,7 +257,7 @@ export default function AuthScreens({
                   <input value={carBrand} onChange={event => setCarBrand(event.target.value)} className={inputClass} placeholder="Марка" />
                   <input value={carModel} onChange={event => setCarModel(event.target.value)} className={inputClass} placeholder="Модель" />
                   <input value={carColor} onChange={event => setCarColor(event.target.value)} className={inputClass} placeholder="Цвет" />
-                  <input value={carYear} onChange={event => setCarYear(event.target.value)} className={inputClass} placeholder="???" />
+                  <input value={carYear} onChange={event => setCarYear(event.target.value)} className={inputClass} placeholder={t.year} />
                 </div>
                 <input value={carPlate} onChange={event => setCarPlate(event.target.value)} className={inputClass} placeholder="Гос. номер" />
                 <input value={carSeats} onChange={event => setCarSeats(Number(event.target.value))} className={inputClass} type="number" placeholder="Мест" />

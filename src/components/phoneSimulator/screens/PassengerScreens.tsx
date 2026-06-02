@@ -139,12 +139,12 @@ export function PassengerApp(props: PassengerAppProps) {
 
 export function ResultsScreen(props: ResultsScreenProps) {
   const {
-    Shell, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, fromCity, toCity, date, searchSeats
+    Shell, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, fromCity, toCity, date, searchSeats, cityDisplayName
   } = props;
   const sortTabs = [
-      ['price', 'Сначала дешевле'],
-      ['time', 'Раньше'],
-      ['rating', 'По рейтингу']
+      ['price', t.cheapestFirst],
+      ['time', t.earlier],
+      ['rating', t.byRating]
     ] as const;
     return (
       <Shell>
@@ -154,7 +154,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-              <h2 className="text-2xl font-black truncate">{fromCity} {'->'} {toCity}</h2>
+              <h2 className="text-2xl font-black truncate">{cityDisplayName(fromCity)} {'->'} {cityDisplayName(toCity)}</h2>
               <p className="text-sm font-bold text-[#334155]">{date} · {searchSeats} пассажир</p>
             </div>
           </div>
@@ -181,7 +181,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
 
 export function TripDetailsScreen(props: TripDetailsScreenProps) {
   const {
-    Shell, setScreen, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking
+    Shell, setScreen, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, cityDisplayName
   } = props;
     const driver = userFor(selectedTrip.driverId);
     const vehicle = vehicleFor(selectedTrip.driverId);
@@ -221,7 +221,7 @@ export function TripDetailsScreen(props: TripDetailsScreenProps) {
               <span className="rounded-full bg-[#047857] px-3 py-1 text-xs font-black">PREMIUM</span>
               <span className="flex items-center gap-1 text-sm font-black"><Clock className="w-4 h-4" /> {selectedTrip.departureTime === 'По наполнении' ? 'По наполнении' : `Сегодня в ${selectedTrip.departureTime}`}</span>
             </div>
-            <h1 className="text-4xl font-black leading-tight">{selectedTrip.fromCity} {'->'} {selectedTrip.toCity}</h1>
+            <h1 className="text-4xl font-black leading-tight">{cityDisplayName(selectedTrip.fromCity)} {'->'} {cityDisplayName(selectedTrip.toCity)}</h1>
           </div>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-32 -mt-7 space-y-5 bg-[#FAF7FF]">
@@ -233,7 +233,7 @@ export function TripDetailsScreen(props: TripDetailsScreenProps) {
               </div>
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.22em] text-[#047857]">Точка сбора{selectedTrip.departureTime !== 'По наполнении' ? ` · ${selectedTrip.departureTime}` : ''}</p>
-                <p className="mt-2 text-lg font-bold">{selectedTrip.fromCity}, {selectedTrip.pickupPoint}</p>
+                <p className="mt-2 text-lg font-bold">{cityDisplayName(selectedTrip.fromCity)}, {selectedTrip.pickupPoint}</p>
                 <p className="text-sm text-[#334155]">Ожидание у главного входа</p>
               </div>
             </div>
@@ -243,7 +243,7 @@ export function TripDetailsScreen(props: TripDetailsScreenProps) {
               </div>
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.22em] text-[#64748B]">Время в пути · {formatDuration(selectedTrip)}</p>
-                <p className="mt-2 text-lg font-bold">{selectedTrip.toCity}, {selectedTrip.dropoffPoint}</p>
+                <p className="mt-2 text-lg font-bold">{cityDisplayName(selectedTrip.toCity)}, {selectedTrip.dropoffPoint}</p>
                 <p className="text-sm text-[#334155]">Возле центральной точки</p>
               </div>
             </div>
@@ -359,7 +359,7 @@ export function TripDetailsScreen(props: TripDetailsScreenProps) {
 
 export function BookingScreen(props: BookingScreenProps) {
   const {
-    Shell, Header, setScreen, selectedTrip, userFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookingMessage, setBookingMessage, confirmBooking, primaryClass
+    Shell, Header, setScreen, selectedTrip, userFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookingMessage, setBookingMessage, confirmBooking, primaryClass, cityDisplayName
   } = props;
     const driver = userFor(selectedTrip.driverId);
     const vehicle = vehicleFor(selectedTrip.driverId);
@@ -370,7 +370,7 @@ export function BookingScreen(props: BookingScreenProps) {
         <Header title="Подтверждение брони" back={() => setScreen('trip')} />
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5 pb-32 space-y-4">
           <div className="bg-white rounded-3xl border border-[#E2E8F0] p-5 space-y-3">
-            <p className="font-black text-lg">{selectedTrip.fromCity} {'->'} {selectedTrip.toCity}</p>
+            <p className="font-black text-lg">{cityDisplayName(selectedTrip.fromCity)} {'->'} {cityDisplayName(selectedTrip.toCity)}</p>
             <p className="text-sm text-[#64748B]">{selectedTrip.departureDate} в {selectedTrip.departureTime}</p>
             <p className="text-sm text-[#64748B]">Водитель: <b>{driver?.fullName}</b></p>
             <p className="text-sm text-[#64748B]">Авто: {vehicle?.brand} {vehicle?.model}, {vehicle?.color}</p>

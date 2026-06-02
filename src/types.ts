@@ -237,6 +237,7 @@ export interface Notification {
   type: string;
   tripId?: string;
   bookingId?: string;
+  requestId?: string;
   chatUserId?: string;
   isRead: boolean;
   createdAt: string;
@@ -255,6 +256,7 @@ export interface City {
   id: string;
   nameRu: string;
   nameTj: string;
+  nameEn?: string;
   isActive: boolean;
 }
 
@@ -274,6 +276,7 @@ export interface SuggestedDirection {
   type: 'city' | 'route';
   nameRu: string;
   nameTj: string;
+  nameEn?: string;
   details: string; // detailed manual explanation/directions
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;

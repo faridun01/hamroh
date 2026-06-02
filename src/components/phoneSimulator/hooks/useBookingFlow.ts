@@ -43,6 +43,9 @@ export function useBookingFlow({
 }: UseBookingFlowParams) {
   const confirmBooking = () => {
     if (!currentUser || !selectedTrip) return;
+    if (currentUser.role !== 'Passenger') return show('Бронирование доступно только пассажиру');
+    if (selectedTrip.driverId === currentUser.id) return show('Нельзя бронировать свою поездку');
+    if (![TripStatus.Published, TripStatus.BookingPending, TripStatus.Accepted].includes(selectedTrip.status)) return show('Эта поездка сейчас недоступна для бронирования');
     if (penaltyAmount > 0) return show('У вас есть неоплаченный штраф за неявку. Оплатите 30% от предыдущей поездки.');
     const hasActiveBooking = bookings.some(booking =>
       booking.passengerId === currentUser.id &&
@@ -89,6 +92,7 @@ export function useBookingFlow({
   const cancelBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
     if (!trip) return;
+    if (booking.passengerId !== currentUser?.id) return;
     if (booking.status !== BookingStatus.Pending && !isCancelWindowOpen(booking)) return show('Отмена без штрафа доступна только 10 минут после подтверждения водителем');
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, status: BookingStatus.CancelledByPassenger } : item));
     if (booking.status === BookingStatus.Accepted) {
@@ -138,6 +142,9 @@ export function useBookingFlow({
 
   const acceptBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
+    const currentBooking = bookings.find(item => item.id === booking.id);
+    if (!trip || trip.driverId !== currentUser?.id) return;
+    if (!currentBooking || currentBooking.status !== BookingStatus.Pending) return;
     if (!trip || trip.availableSeats < booking.seatsCount) return show('Недостаточно свободных мест');
     const acceptedAt = new Date();
     const cancellationDeadlineAt = new Date(acceptedAt.getTime() + 10 * 60 * 1000);
@@ -170,6 +177,7 @@ export function useBookingFlow({
   };
 
   const confirmPassengerRide = (booking: Booking) => {
+    if (booking.passengerId !== currentUser?.id || booking.status !== BookingStatus.Accepted) return;
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, passengerFinalConfirmedAt: new Date().toISOString() } : item));
     const trip = trips.find(item => item.id === booking.tripId);
     if (trip) {
@@ -194,6 +202,7 @@ export function useBookingFlow({
   const confirmDriverRide = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
     if (!trip || trip.driverId !== currentUser?.id) return;
+    if (booking.status !== BookingStatus.Accepted) return;
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, driverFinalConfirmedAt: new Date().toISOString() } : item));
     setNotifications(prev => [
       {
@@ -214,6 +223,8 @@ export function useBookingFlow({
 
   const rejectBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
+    if (!trip || trip.driverId !== currentUser?.id) return;
+    if (booking.status !== BookingStatus.Pending) return;
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, status: BookingStatus.Rejected } : item));
     setNotifications(prev => [
       {
@@ -232,6 +243,8 @@ export function useBookingFlow({
   };
 
   const completeTrip = (tripId: string) => {
+    const trip = trips.find(item => item.id === tripId);
+    if (!trip || trip.driverId !== currentUser?.id) return;
     setTrips(prev => prev.map(trip => trip.id === tripId ? { ...trip, status: TripStatus.Completed } : trip));
     setBookings(prev => prev.map(booking => booking.tripId === tripId && booking.status === BookingStatus.Accepted ? { ...booking, status: BookingStatus.Completed } : booking));
     const tripBookings = bookings.filter(booking => booking.tripId === tripId && booking.status === BookingStatus.Accepted);
@@ -252,6 +265,8 @@ export function useBookingFlow({
   };
 
   const cancelTrip = (tripId: string) => {
+    const trip = trips.find(item => item.id === tripId);
+    if (!trip || trip.driverId !== currentUser?.id) return;
     const tripBookings = bookings.filter(booking =>
       booking.tripId === tripId &&
       [BookingStatus.Pending, BookingStatus.Accepted].includes(booking.status)

@@ -138,8 +138,8 @@ export function BottomNav({
   );
 }
 
-function cityLabel(city: City, language: Language) {
+export function cityLabel(city: City, language: Language) {
   if (language === Language.TJ) return city.nameTj || city.nameRu;
-  if (language === Language.EN) return city.nameRu;
+  if (language === Language.EN) return city.nameEn || city.nameRu;
   return city.nameRu;
 }

@@ -22,7 +22,7 @@ import {
 import { RequestCard as PassengerRequestCard, TripCard as RideTripCard } from './phoneSimulator/PhoneSimulatorCards';
 import { PhoneDeviceFrame } from './phoneSimulator/PhoneDeviceFrame';
 import { localizedCopy, today, type Screen } from './phoneSimulator/phoneSimulatorCopy';
-import { BottomNav, CitySelect, PhoneHeader as Header, PhoneShell as Shell } from './phoneSimulator/PhoneSimulatorLayout';
+import { BottomNav, CitySelect, PhoneHeader as Header, PhoneShell as Shell, cityLabel } from './phoneSimulator/PhoneSimulatorLayout';
 import { MessagesPanel, NotificationsPanel, ProfilePanel } from './phoneSimulator/PhoneSimulatorPanels';
 import { displayPriceForTrip, formatDuration, money, rowPriceForTrip, seatRowsForSeats, timeToMinutes } from './phoneSimulator/phoneSimulatorUtils';
 import AuthScreens from './phoneSimulator/screens/AuthScreens';
@@ -208,6 +208,11 @@ export default function PhoneSimulator({
   const [reviewRating, setReviewRating] = useState(5);
 
   const t = localizedCopy[language] || localizedCopy[Language.RU];
+  const cityDisplayName = (value?: string) => {
+    if (!value) return '';
+    const city = cities.find(item => item.nameRu === value || item.nameTj === value || item.nameEn === value);
+    return city ? cityLabel(city, language) : value;
+  };
   const selectedTrip = trips.find(trip => trip.id === selectedTripId);
   const myNotifications = notifications
     .filter(item => item.userId === currentUser?.id && !hiddenNotificationIds.includes(item.id))
@@ -641,6 +646,15 @@ export default function PhoneSimulator({
 
   const offerPassengerRequest = (request: PassengerRequest) => {
     if (!currentUser) return;
+    const offerTrip = trips.find(trip =>
+      trip.driverId === currentUser.id &&
+      [TripStatus.Published, TripStatus.BookingPending, TripStatus.Accepted].includes(trip.status) &&
+      trip.fromCity === request.fromCity &&
+      trip.toCity === request.toCity &&
+      trip.departureDate === request.departureDate &&
+      trip.availableSeats >= request.seatsCount
+    );
+    if (!offerTrip) return show('Создайте подходящую активную поездку с достаточным количеством мест, чтобы отправить предложение пассажиру.');
     setPassengerRequests(prev => prev.map(item => item.id === request.id ? { ...item, acceptedByDriverId: currentUser.id, status: 'pending' } : item));
     setNotifications(prev => [
       {
@@ -649,6 +663,9 @@ export default function PhoneSimulator({
         title: 'Водитель готов забрать вас',
         message: `${currentUser.fullName} откликнулся на вашу заявку. Подтвердите водителя.`,
         type: 'driver_offer',
+        tripId: offerTrip.id,
+        requestId: request.id,
+        chatUserId: currentUser.id,
         isRead: false,
         createdAt: new Date().toISOString()
       },
@@ -686,8 +703,13 @@ export default function PhoneSimulator({
       return;
     }
     if (currentUser?.role === UserRole.Passenger && notification.type === 'driver_offer') {
+      if (notification.tripId) {
+        setSelectedTripId(notification.tripId);
+        setTripBackTarget('passenger');
+        setScreen('trip');
+        return;
+      }
       setPassengerTab('trips');
-      setPassengerTripsView('active');
       setScreen('passenger');
       return;
     }
@@ -749,6 +771,7 @@ export default function PhoneSimulator({
           setScreen('trip');
         }}
         labels={t}
+        cityName={cityDisplayName}
       />
     );
   };
@@ -761,6 +784,8 @@ export default function PhoneSimulator({
       primaryClass={primaryClass}
       money={money}
       onOffer={() => offerPassengerRequest(request)}
+      labels={t}
+      cityName={cityDisplayName}
     />
   );
 
@@ -798,7 +823,7 @@ export default function PhoneSimulator({
               <div key={trip.id} className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
                 <div className="flex justify-between gap-3">
                   <div>
-                    <p className="font-black">{trip.fromCity} {'->'} {trip.toCity}</p>
+                    <p className="font-black">{cityDisplayName(trip.fromCity)} {'->'} {cityDisplayName(trip.toCity)}</p>
                     <p className="text-xs text-[#64748B]">{trip.departureDate} в {trip.departureTime}</p>
                   </div>
                   <span className="h-7 px-3 rounded-full text-xs font-black flex items-center bg-[#D1FAE5] text-[#047857]">{trip.status}</span>
@@ -923,7 +948,7 @@ export default function PhoneSimulator({
             <div key={booking.id} className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
               <div className="flex justify-between gap-3">
                 <div>
-                  <p className="font-black">{trip?.fromCity} {'->'} {trip?.toCity}</p>
+                  <p className="font-black">{cityDisplayName(trip?.fromCity)} {'->'} {cityDisplayName(trip?.toCity)}</p>
                   <p className="text-xs text-[#64748B]">{trip?.departureDate} в {trip?.departureTime}</p>
                 </div>
                 <span className={`h-7 px-3 rounded-full text-xs font-black flex items-center ${isAccepted ? 'bg-[#D1FAE5] text-[#047857]' : booking.status === BookingStatus.Pending ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-[#64748B]'}`}>
@@ -939,7 +964,7 @@ export default function PhoneSimulator({
                 </div>
                 <Lock className={`w-5 h-5 ${canChat ? 'text-[#10B981]' : 'text-[#64748B]'}`} />
               </div>
-              <p className="text-xs font-bold text-[#64748B]">Номер машины: {canChat ? vehicle?.plateNumber : '•••• TJ ••'}</p>
+              <p className="text-xs font-bold text-[#64748B]">Номер машины: {canChat ? vehicle?.plateNumber : '"""" TJ ""'}</p>
               {canChat && (
                 <div className={`rounded-2xl border p-3 ${passengerAgreed ? 'bg-[#ECFDF5] border-[#A7F3D0]' : 'bg-amber-50 border-amber-100'}`}>
                   <p className={`text-xs font-black ${passengerAgreed ? 'text-[#047857]' : 'text-amber-800'}`}>
@@ -1048,6 +1073,7 @@ export default function PhoneSimulator({
     driverTab,
     tripSort,
     setTripSort,
+    cityDisplayName,
     filteredTrips,
     renderTripCard,
     selectedTrip,
@@ -1164,6 +1190,7 @@ export default function PhoneSimulator({
     setPointFromMap,
     seatRowsForSeats,
     money,
+    cityDisplayName,
     userFor,
     driverProfileFor,
     vehicleFor,

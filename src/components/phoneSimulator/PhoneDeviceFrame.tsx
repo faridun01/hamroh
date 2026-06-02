@@ -26,12 +26,12 @@ export function PhoneDeviceFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       <div className="flex items-center gap-2 mb-4 bg-white border border-[#E2E8F0] rounded-2xl p-2 shadow-sm">
         <button onClick={() => setDeviceType('ios')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'ios' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>iOS</button>
         <button onClick={() => setDeviceType('android')} className={`px-3 h-9 rounded-xl text-xs font-bold ${deviceType === 'android' ? 'bg-[#D1FAE5] text-[#047857]' : 'text-[#64748B]'}`}>Android</button>
       </div>
-      <div className={`relative w-90 h-180 bg-neutral-900 border-10 border-neutral-800 shadow-2xl overflow-hidden select-none ${deviceType === 'ios' ? 'rounded-[48px]' : 'rounded-[36px]'}`}>
+      <div className={`relative h-[min(45rem,calc(100vh-6.5rem))] min-h-[34rem] w-[min(22.5rem,calc(100vw-1rem))] bg-neutral-900 border-10 border-neutral-800 shadow-2xl overflow-hidden select-none ${deviceType === 'ios' ? 'rounded-[48px]' : 'rounded-[36px]'}`}>
         {deviceType === 'ios' && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-50" />}
         {deviceType === 'android' && <div className="absolute top-3 left-1/2 -translate-x-1/2 w-3 h-3 bg-black rounded-full z-50" />}
         <div className="h-8 bg-white px-6 pt-1 flex items-center justify-between z-40 relative text-[#0F172A] text-[10px] font-bold">

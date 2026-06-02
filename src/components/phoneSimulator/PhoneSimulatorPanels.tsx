@@ -230,7 +230,7 @@ export function ProfilePanel({
       </div>
       {role === 'passenger' && (
         <>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4">
               <p className="text-xs text-[#64748B]">Активные</p>
               <p className="text-2xl font-black">{passengerActive}</p>
@@ -239,11 +239,6 @@ export function ProfilePanel({
               <p className="text-xs text-[#64748B]">Завершено</p>
               <p className="text-2xl font-black">{passengerCompleted}</p>
             </div>
-            <button onClick={() => setPassengerTab('notifications')} className="bg-white rounded-3xl border border-[#E2E8F0] p-4 text-left relative">
-              <p className="text-xs text-[#64748B]">Уведомления</p>
-              <p className="text-2xl font-black">{unreadNotificationsCount}</p>
-              {unreadNotificationsCount > 0 && <span className="absolute top-3 right-3 w-3 h-3 rounded-full bg-red-500" />}
-            </button>
           </div>
           <div className="bg-white rounded-3xl border border-[#E2E8F0] p-5 space-y-2">
             <p className="font-black">Безопасность поездок</p>
