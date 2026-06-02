@@ -1,4 +1,3 @@
-import type React from 'react';
 import { PlusCircle } from 'lucide-react';
 import { VerificationStatus, type PassengerRequest, type Trip } from '../../../types';
 
@@ -8,7 +7,7 @@ export interface DriverScreensProps {
 
 export function DriverApp(props: DriverScreensProps) {
   const {
-    Shell, CitySelect, BottomNav, MessagesPanel, NotificationsPanel, ProfilePanel, UserRole, BookingStatus, TripStatus, currentUser, users, driverProfiles, vehicles, trips, bookings, passengerRequests, t, driverTab, setDriverTab, passengerTab, driverHomeMode, setDriverHomeMode, driverRouteTo, setDriverRouteTo, driverCity, setDriverCity, driverFilterTo, setDriverFilterTo, driverHomeView, setDriverHomeView, renderTripCard, renderRequestCard, selectClass, inputClass, primaryClass, cities, language, createFrom, setCreateFrom, createTo, setCreateTo, createDate, setCreateDate, createTime, setCreateTime, createTimeMode, setCreateTimeMode, createPrice, setCreatePrice, createSeats, setCreateSeats, createPricingMode, setCreatePricingMode, frontSeatPrice, setFrontSeatPrice, secondRowPrice, setSecondRowPrice, thirdRowPrice, setThirdRowPrice, createPickup, setCreatePickup, createDropoff, setCreateDropoff, createComment, setCreateComment, createBaggage, setCreateBaggage, createWomen, setCreateWomen, editingTripId, resetTripForm, completeTrip, publishTrip, setPointFromLocation, setPointFromMap, seatRowsForSeats, money, userFor, driverProfileFor, vehicleFor, rejectBooking, acceptBooking, driverTripsList, setChatUserId, setHiddenChatUserIds, hiddenChatUserIds, chatUserId, chats, chatInput, setChatInput, chatInputRef, sendChat, myNotifications, unreadNotificationsCount, openNotification, setNotifications, setHiddenNotificationIds, setPassengerTab, setCurrentUser, setScreen, cancelBookingByDriver, confirmDriverRide, cancelTrip
+    Shell, CitySelect, BottomNav, MessagesPanel, NotificationsPanel, ProfilePanel, UserRole, BookingStatus, TripStatus, currentUser, users, driverProfiles, vehicles, trips, bookings, passengerRequests, t, driverTab, setDriverTab, passengerTab, driverHomeMode, setDriverHomeMode, driverRouteTo, setDriverRouteTo, driverCity, setDriverCity, driverFilterTo, setDriverFilterTo, driverHomeView, setDriverHomeView, renderTripCard, renderRequestCard, selectClass, inputClass, primaryClass, cities, language, createFrom, setCreateFrom, createTo, setCreateTo, createDate, setCreateDate, createTime, setCreateTime, createTimeMode, setCreateTimeMode, createPrice, setCreatePrice, createSeats, setCreateSeats, createPricingMode, setCreatePricingMode, frontSeatPrice, setFrontSeatPrice, secondRowPrice, setSecondRowPrice, thirdRowPrice, setThirdRowPrice, createPickup, setCreatePickup, createDropoff, setCreateDropoff, createComment, setCreateComment, createBaggage, setCreateBaggage, createWomen, setCreateWomen, editingTripId, resetTripForm, completeTrip, publishTrip, setPointFromLocation, setPointFromMap, seatRowsForSeats, money, userFor, driverProfileFor, vehicleFor, rejectBooking, acceptBooking, driverTripsList, setChatUserId, setHiddenChatUserIds, hiddenChatUserIds, chatUserId, chats, chatInput, setChatInput, chatInputRef, sendChat, myNotifications, unreadNotificationsCount, openNotification, setNotifications, setHiddenNotificationIds, setPassengerTab, setCurrentUser, setScreen
   } = props;
     const profile = driverProfileFor(currentUser?.id);
     const vehicle = vehicleFor(currentUser?.id);
@@ -40,29 +39,29 @@ export function DriverApp(props: DriverScreensProps) {
           {driverTab === 'home' && (
             <div className="p-5 space-y-4">
               <h2 className="text-2xl font-black">{t.driverHome}</h2>
-              {!isVerified && <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 text-sm text-amber-800 font-semibold">Ваш профиль водителя отправлен на проверку. Создание поездок и принятие пассажиров недоступны до одобрения.</div>}
+              <h2 className="text-2xl font-black">{t.driverHome}</h2>
               <div className="bg-white rounded-3xl border border-[#E2E8F0] p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F8FAFC] p-1">
+                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F8FAFC] p-1">
                   <button onClick={() => setDriverHomeMode('city')} className={`h-11 rounded-xl text-xs font-black ${driverHomeMode === 'city' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Город</button>
-                  <button onClick={() => setDriverHomeMode('route')} className={`h-11 rounded-xl text-xs font-black ${driverHomeMode === 'route' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Маршрут</button>
                 </div>
-                <p className="font-black">{driverHomeMode === 'city' ? 'Выберите город' : 'Выберите маршрут'}</p>
+                </div>
                 <CitySelect value={driverCity} onChange={setDriverCity} cities={cities} language={language} className={selectClass} />
                 {driverHomeMode === 'route' && <CitySelect value={driverRouteTo} onChange={setDriverRouteTo} cities={cities} language={language} className={selectClass} />}
                 {driverHomeMode === 'city' && (
                   <select value={driverFilterTo} onChange={event => setDriverFilterTo(event.target.value)} className={selectClass}>
-                    <option value="">Все направления</option>
+                  <select value={driverFilterTo} onChange={event => setDriverFilterTo(event.target.value)} className={selectClass}>
                     {cities.filter(city => city.nameRu !== driverCity).map(city => <option key={city.id} value={city.nameRu}>{city.nameRu}</option>)}
                   </select>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
+              <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white border border-[#E2E8F0] p-1">
                 <button onClick={() => setDriverHomeView('trips')} className={`h-11 rounded-xl text-xs font-black ${driverHomeView === 'trips' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Актуальная поездки</button>
-                <button onClick={() => setDriverHomeView('requests')} className={`h-11 rounded-xl text-xs font-black ${driverHomeView === 'requests' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>Заявки пассажиров</button>
               </div>
               {driverHomeView === 'trips' && <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-black">{driverHomeMode === 'city' ? 'Актуальные поездки из города' : 'Актуальные поездки по маршруту'}</h3>
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-[#047857]">{marketTrips.length}</span>
                 </div>
                 {marketTrips.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">{t.noTripsFromCity}</p>}
@@ -70,10 +69,10 @@ export function DriverApp(props: DriverScreensProps) {
               </div>}
               {driverHomeView === 'requests' && <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-black">{driverHomeMode === 'city' ? 'Заявки пассажиров от адреса' : 'Заявки пассажиров по маршруту'}</h3>
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-[#047857]">{homeRequests.length}</span>
                 </div>
-                {homeRequests.length === 0 && <p className="text-sm text-[#64748B] bg-white rounded-3xl p-5 text-center">Пока нет заявок от адреса</p>}
+                </div>
                 {homeRequests.slice(0, 3).map(renderRequestCard)}
               </div>}
             </div>
@@ -83,13 +82,13 @@ export function DriverApp(props: DriverScreensProps) {
               <h2 className="text-xl font-black">{editingTripId ? t.create : t.create}</h2>
               {activeTrip && !editingTripId ? (
                 <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4 space-y-3">
-                  <p className="font-black text-rose-700">Завершите текущую поездку, чтобы создать новую</p>
+                <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4 space-y-3">
                   <p className="text-sm text-rose-800">{activeTrip.fromCity} {'->'} {activeTrip.toCity}</p>
-                  <button onClick={() => completeTrip(activeTrip.id)} className={primaryClass}>Завершить поездку</button>
+                  <p className="text-sm text-rose-800">{activeTrip.fromCity} {'->'} {activeTrip.toCity}</p>
                 </div>
               ) : (
                 <>
-                  {!isVerified && <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 text-sm text-amber-800 font-semibold">Создание поездок доступно после проверки.</div>}
+                <>
                   <CitySelect value={createFrom} onChange={setCreateFrom} cities={cities} language={language} className={selectClass} />
                   <CitySelect value={createTo} onChange={setCreateTo} cities={cities} language={language} className={selectClass} />
                   <div className="grid grid-cols-2 gap-3">
@@ -110,15 +109,15 @@ export function DriverApp(props: DriverScreensProps) {
                       <button onClick={() => setCreatePricingMode('row')} className={`h-11 rounded-xl text-xs font-black ${createPricingMode === 'row' ? 'bg-[#10B981] text-white' : 'text-[#64748B]'}`}>{t.byRows}</button>
                     </div>
                     {createPricingMode === 'flat' ? (
-                      <p className="text-xs text-[#64748B]">Для всех мест будет использоваться общая цена: {money(createPrice)}.</p>
+                    {createPricingMode === 'flat' ? (
                     ) : (
                       <div className="space-y-3">
-                        <p className="text-sm font-black">Цены по местам в машине</p>
+                      <div className="space-y-3">
                         {seatRowsForSeats(createSeats).map(row => (
                           <div key={row.key} className="grid grid-cols-[1fr_112px] gap-3 items-center">
                             <div>
                               <p className="text-sm font-bold">{row.label}</p>
-                              <p className="text-xs text-[#64748B]">{row.seats} мест(а)</p>
+                              <p className="text-sm font-bold">{row.label}</p>
                             </div>
                             <input
                               type="number"
@@ -130,7 +129,7 @@ export function DriverApp(props: DriverScreensProps) {
                                 else setSecondRowPrice(value);
                               }}
                               className={inputClass}
-                              placeholder="Цена"
+                              className={inputClass}
                             />
                           </div>
                         ))}
@@ -140,15 +139,15 @@ export function DriverApp(props: DriverScreensProps) {
                   <div className="space-y-2">
                     <input value={createPickup} onChange={event => setCreatePickup(event.target.value)} className={inputClass} placeholder={t.pickupAddress} />
                     <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setPointFromLocation('tripPickup')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Моя локация</button>
-                      <button type="button" onClick={() => setPointFromMap('tripPickup')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Выбрать на карте</button>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <input value={createDropoff} onChange={event => setCreateDropoff(event.target.value)} className={inputClass} placeholder={t.dropoffPoint} />
                     <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setPointFromLocation('tripDropoff')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Моя локация</button>
-                      <button type="button" onClick={() => setPointFromMap('tripDropoff')} className="h-11 rounded-2xl border border-[#E2E8F0] bg-white text-xs font-black text-[#047857]">Выбрать на карте</button>
                     </div>
                   </div>
                   <textarea value={createComment} onChange={event => setCreateComment(event.target.value)} className="w-full min-h-24 rounded-2xl bg-white border border-[#E2E8F0] p-3 text-sm outline-none" placeholder={t.driverComment} />
@@ -167,7 +166,7 @@ export function DriverApp(props: DriverScreensProps) {
           {driverTab === 'requests' && (
             <div className="p-5 space-y-4">
               <h2 className="text-xl font-black">{t.requests}</h2>
-              {pendingBookings.length > 0 && <h3 className="font-black text-sm text-[#64748B]">Брони на ваши поездки</h3>}
+              <h2 className="text-xl font-black">{t.requests}</h2>
               {pendingBookings.map(booking => {
                 const trip = trips.find(item => item.id === booking.tripId);
                 const passenger = userFor(booking.passengerId);
@@ -176,7 +175,7 @@ export function DriverApp(props: DriverScreensProps) {
                     <div className="flex justify-between gap-3">
                       <div>
                         <p className="font-black">{trip?.fromCity} {'->'} {trip?.toCity}</p>
-                        <p className="text-xs text-[#64748B]">{trip?.departureDate} в {trip?.departureTime}</p>
+                        <p className="text-xs text-[#64748B]">{trip?.departureDate} ? {trip?.departureTime}</p>
                       </div>
                       <span className="h-7 px-3 rounded-full text-xs font-black flex items-center bg-amber-50 text-amber-700">Pending</span>
                     </div>
@@ -184,21 +183,21 @@ export function DriverApp(props: DriverScreensProps) {
                       <img src={passenger?.avatarUrl} className="w-10 h-10 rounded-full object-cover" alt="" />
                       <div className="flex-1">
                         <p className="font-bold text-sm">{passenger?.fullName}</p>
-                        <p className="text-xs text-[#64748B]">{booking.seatsCount} мест(а), всего {money(booking.totalPrice)}</p>
+                        <p className="font-bold text-sm">{passenger?.fullName}</p>
                       </div>
                     </div>
                     {booking.passengerMessage && <p className="text-sm text-[#64748B]">{booking.passengerMessage}</p>}
                     <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <button onClick={() => rejectBooking(booking)} className="h-12 rounded-2xl bg-rose-50 text-rose-700 font-black">Отклонить</button>
-                      <button onClick={() => acceptBooking(booking)} className="h-12 rounded-2xl bg-[#10B981] text-white font-black">Принять</button>
                     </div>
                   </div>
                 );
               })}
-              <h3 className="font-black text-sm text-[#64748B]">Заявки от адреса</h3>
+              })}
               {passengerRequests.filter(req => req.status === 'pending').map(renderRequestCard)}
               {pendingBookings.length === 0 && passengerRequests.filter(req => req.status === 'pending').length === 0 && (
-                <p className="text-sm text-[#64748B] bg-white rounded-3xl p-6 text-center">Пока нет заявок пассажиров</p>
+              {pendingBookings.length === 0 && passengerRequests.filter(req => req.status === 'pending').length === 0 && (
               )}
             </div>
           )}
@@ -208,7 +207,7 @@ export function DriverApp(props: DriverScreensProps) {
               <button
                 onClick={() => { resetTripForm(); setDriverTab('create'); }}
                 className="absolute right-5 bottom-5 w-16 h-16 rounded-full bg-[#10B981] text-white shadow-xl shadow-emerald-900/25 flex items-center justify-center active:scale-95 transition-all"
-                aria-label="Создать поездку"
+                className="absolute right-5 bottom-5 w-16 h-16 rounded-full bg-[#10B981] text-white shadow-xl shadow-emerald-900/25 flex items-center justify-center active:scale-95 transition-all"
               >
                 <PlusCircle className="w-8 h-8" />
               </button>

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
-  User, UserRole, Language, VerificationStatus, BookingStatus, TripStatus, ComplaintStatus,
+  User, UserRole, VerificationStatus, ComplaintStatus,
   Trip, Booking, Review, Complaint, Notification, DriverProfile, Vehicle, City, Route, SuggestedDirection
 } from './types';
 import { 
@@ -15,9 +15,9 @@ import {
 import PhoneSimulator from './components/PhoneSimulator';
 import DeveloperDocs from './components/DeveloperDocs';
 import AdminDashboard from './components/AdminDashboard';
-import { 
-  Users, Layers, Settings, ShieldCheck, ShieldAlert, BarChart3, Star, AlertCircle, CheckCircle, 
-  Calendar, Check, X, Hammer, FileCode, Lock, Globe, Server, AlertTriangle, MapPin, Compass
+import { Hammer, FileCode, Lock } from 'lucide-react';
+
+const HAMROH_CITIES: City[] = [
 } from 'lucide-react';
 
 const HAMROH_CITIES: City[] = [
@@ -27,9 +27,6 @@ const HAMROH_CITIES: City[] = [
   { id: '4', nameRu: 'Куляб', nameTj: 'Кӯлоб', isActive: true },
   { id: '5', nameRu: 'Панджакент', nameTj: 'Панҷакент', isActive: true },
   { id: '6', nameRu: 'Турсунзода', nameTj: 'Турсунзода', isActive: true },
-  { id: '7', nameRu: 'Истаравшан', nameTj: 'Истаравшан', isActive: true },
-  { id: '8', nameRu: 'Исфара', nameTj: 'Исфара', isActive: true },
-  { id: '9', nameRu: 'Канибадам', nameTj: 'Конибодом', isActive: true },
 ];
 
 export default function App() {
@@ -50,22 +47,22 @@ export default function App() {
     {
       id: 's1',
       userId: 'u3',
+    {
+      type: 'city',
+      userId: 'u3',
       userFullName: 'Дилшод Назаров',
       type: 'city',
-      nameRu: 'Хорог',
-      nameTj: 'Хоруғ',
-      details: 'Хорог — административный центр Горно-Бадахшанской автономной области (ГБАО). Поездка идет через Куляб, перевал Хобуработ и Дарвазский район. В зимнее время проезд затруднен, требуются мощные внедорожники.',
       status: 'pending',
       createdAt: '2026-05-21T06:12:00Z'
     },
     {
       id: 's2',
       userId: 'u1',
+    {
+      type: 'route',
+      userId: 'u1',
       userFullName: 'Сомон Файзуллаев',
       type: 'route',
-      nameRu: 'Душанбе — Муминабад',
-      nameTj: 'Душанбе — Мӯъминобод',
-      details: 'Регулярная трасса по южному направлению, поворот из города Куляб. Проезжаем живописные холмистые ландшафты у подножия вершин Чилдухтарон. Покрытие асфальтовое, средняя скорость 70 км/ч.',
       status: 'pending',
       createdAt: '2026-05-22T03:35:00Z'
     }
@@ -77,6 +74,7 @@ export default function App() {
   // Emulator configuration options
   const [deviceType, setDeviceType] = useState<'ios' | 'android'>('ios');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
 
   // Admin section temporary states
   const [adminNote, setAdminNote] = useState<{ [key: string]: string }>({});
@@ -95,11 +93,37 @@ export default function App() {
       else if (userIndex === 4) selectedUser = users.find(u => u.phone === '+992985123456')!;
       else selectedUser = users.find(u => u.id === 'admin1')!;
 
+      if (selectedUser.role === UserRole.Admin) {
+        setAdminUser(selectedUser);
+        setCurrentUser(null);
+        setWebTab('admin');
+        alert(`ÐÐ´Ð¼Ð¸Ð½ Ð²Ð¾ÑˆÐµÐ»: ${selectedUser.fullName}`);
+        return;
+      }
+
+      setAdminUser(null);
       setCurrentUser(selectedUser);
-      alert(`Авторизован как: ${selectedUser.fullName} (${selectedUser.role === UserRole.Admin ? 'Админ' : selectedUser.role})`);
+      alert(`Ð’Ñ…Ð¾Ð´ Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½: ${selectedUser.fullName} (${selectedUser.role})`);
     } catch (err) {
-      alert('Ошибка быстрого входа.');
+      alert('ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ð´ÐµÐ¼Ð¾-Ð¿Ñ€Ð¾Ñ„Ð¸Ð»ÑŒ.');
     }
+  };
+
+  const handleMobileUserChange = (user: User | null) => {
+    if (user?.role === UserRole.Admin) {
+      setAdminUser(user);
+      setCurrentUser(null);
+      setWebTab('admin');
+      return;
+    }
+
+    setAdminUser(null);
+    setCurrentUser(user);
+  };
+
+  const handleAdminLogout = () => {
+    setAdminUser(null);
+    setWebTab('docs');
   };
 
   // Admin Actions: Approve Driver + Vehicle
@@ -118,8 +142,8 @@ export default function App() {
     const okNotif: Notification = {
       id: 'n_not_' + Date.now(),
       userId: userId,
-      title: 'Лицензия Одобрена!',
-      message: 'Администратор Hamroh верифицировал ваши документы и автомобиль. Теперь вы можете создавать поездки!',
+  };
+
       type: 'verification_success',
       isRead: false,
       createdAt: new Date().toISOString()
@@ -146,7 +170,7 @@ export default function App() {
 
   // Admin verify complaint resolution details
   const handleAdminResolveComplaint = (compId: string) => {
-    const note = adminNote[compId] || 'Проблема урегулирована по согласию сторон.';
+          nameTj: sug.nameTj || sug.nameRu,
     setComplaints(complaints.map(c => 
       c.id === compId ? { ...c, status: ComplaintStatus.Resolved, adminNote: note } : c
     ));
@@ -176,8 +200,8 @@ export default function App() {
         setCities(prev => [...prev, newCity]);
       }
     } else {
-      // It's a route. Try parsing "CityA — CityB"
-      const parts = sug.nameRu.split(/[—\->]/).map(p => p.trim());
+      // It's a route. Try parsing "CityA ï¿½ CityB"
+      const parts = sug.nameRu.split(/[ï¿½\->]/).map(p => p.trim());
       if (parts.length >= 2) {
         let fromCity = cities.find(c => c.nameRu.toLowerCase() === parts[0].toLowerCase());
         let toCity = cities.find(c => c.nameRu.toLowerCase() === parts[1].toLowerCase());
@@ -207,14 +231,14 @@ export default function App() {
     const okNotif: Notification = {
       id: 'n_sug_' + Date.now(),
       userId: sug.userId,
-      title: 'Направление одобрено! ✅',
-      message: `Ваше новое направление "${sug.nameRu}" одобрено модератором и готово к использованию в Hamroh!`,
+      };
+      setNotifications([failNotif, ...notifications]);
       type: 'complaint_resolved',
       isRead: false,
       createdAt: new Date().toISOString()
     };
     setNotifications([okNotif, ...notifications]);
-    alert(`Направление "${sug.nameRu}" успешно одобрено и активировано на платформе!`);
+      
   };
 
   const handleAdminRejectDirection = (suggestedId: string) => {
@@ -226,8 +250,8 @@ export default function App() {
       const failNotif: Notification = {
         id: 'n_sug_f_' + Date.now(),
         userId: sug.userId,
-        title: 'Маршрут отклонён',
-        message: `Ваша заявка на направление "${sug.nameRu}" отклонена. Укажите более точные сведения.`,
+            <p className="text-xs text-[#64748B]">Intercity ride-sharing carpool services for Dushanbe, Khujand, Bokhtar, and Kulyab.</p>
+          </div>
         type: 'booking_rejected',
         isRead: false,
         createdAt: new Date().toISOString()
@@ -247,64 +271,140 @@ export default function App() {
           </div>
           <div className="text-left">
             <h1 className="font-extrabold text-base tracking-tight text-[#0F172A] flex items-center space-x-2">
-              <span>Hamroh Mobile Panel</span>
-              <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20">Tajikistan MVP</span>
+              <span>{adminUser ? 'Hamroh Admin Control Center' : 'Hamroh Mobile Panel'}</span>
+              <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20">{adminUser ? 'Operations' : 'Tajikistan MVP'}</span>
             </h1>
-            <p className="text-xs text-[#64748B]">Intercity ride-sharing carpool services for Dushanbe, Khujand, Bokhtar, and Kulyab.</p>
+            <p className="text-xs text-[#64748B]">{adminUser ? 'Administrative oversight, moderation, verification and platform safety.' : 'Intercity ride-sharing carpool services for Dushanbe, Khujand, Bokhtar, and Kulyab.'}</p>
           </div>
         </div>
 
         {/* Global developer bypass action panel */}
         <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl flex flex-wrap items-center gap-2">
+          {adminUser ? (
+            <>
+              <span className="text-xs text-[#64748B] font-mono font-bold flex items-center space-x-1">
+                <Lock className="w-3.5 h-3.5 text-emerald-500" />
+                <span>ÐÐ´Ð¼Ð¸Ð½-ÑÐµÑÑÐ¸Ñ:</span>
+              </span>
+              <span className="text-[10px] bg-slate-950 text-white px-2.5 py-1 rounded border border-slate-800 font-black">
+                {adminUser.fullName}
+              </span>
+              <button
+                onClick={handleAdminLogout}
+                className="text-[10px] bg-white hover:bg-rose-50 text-rose-600 px-2.5 py-1 rounded border border-rose-200 transition-all font-black"
+              >
+                Ð’Ñ‹Ð¹Ñ‚Ð¸
+              </button>
+            </>
+          ) : (
+            <>
           <span className="text-xs text-[#64748B] font-mono font-bold flex items-center space-x-1">
             <Hammer className="w-3.5 h-3.5 text-amber-500" />
-            <span>Инструменты Отладки (Вход):</span>
+          </div>
           </span>
           <div className="flex flex-wrap gap-1">
             <button 
               onClick={() => handleBypassLogin(-2)} 
               className="text-[10px] bg-[#D1FAE5] hover:bg-emerald-200 text-[#047857] px-2.5 py-1 rounded border border-[#10B981]/30 transition-all font-black"
-              title="Телефон: +992501000001, пароль: 7171"
+        
             >
-              Демо пассажир
+        <div className="lg:col-span-5 flex flex-col items-center">
             </button>
             <button 
               onClick={() => handleBypassLogin(-1)} 
               className="text-[10px] bg-[#D1FAE5] hover:bg-emerald-200 text-[#047857] px-2.5 py-1 rounded border border-[#10B981]/30 transition-all font-black"
-              title="Телефон: +992501000002, пароль: 7171"
+            reviews={reviews} setReviews={setReviews}
             >
-              Демо водитель
+            notifications={notifications} setNotifications={setNotifications}
             </button>
             <button 
               onClick={() => handleBypassLogin(2)} 
               className="text-[10px] bg-white hover:bg-[#D1FAE5] text-[#0F172A] px-2.5 py-1 rounded border border-[#E2E8F0] transition-all font-medium"
             >
-              🧔 Мусофир (Пассажир)
+            routes={routes} setRoutes={setRoutes}
             </button>
             <button 
               onClick={() => handleBypassLogin(0)} 
               className="text-[10px] bg-white hover:bg-[#D1FAE5] text-[#0F172A] px-2.5 py-1 rounded border border-[#E2E8F0] transition-all font-medium"
             >
-              🚗 Ронанда (Водитель)
+        <div className="lg:col-span-7 flex flex-col h-180 bg-slate-950/20 rounded-2xl border border-slate-800 overflow-hidden">
             </button>
             <button 
               onClick={() => handleBypassLogin(4)} 
               className="text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-2.5 py-1 rounded border border-amber-500/30 transition-all font-medium"
-              title="Для теста верификации"
+            <div className="flex space-x-1">
             >
-              📝 Новый водитель
+                id="workspace-btn-docs"
             </button>
             <button 
               onClick={() => handleBypassLogin(5)} 
               className="text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 px-2.5 py-1 rounded border border-red-500/30 transition-all font-medium"
             >
-              🛡️ Админ
+                }`}
             </button>
           </div>
+            </>
+          )}
         </div>
       </header>
 
       {/* Main Multi-Column Split Portal Layout */}
+      {adminUser ? (
+      <main className="grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
+        <aside className="lg:col-span-3 bg-slate-950 text-white rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-5 border-b border-slate-800">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-black">Admin Control</p>
+            <h2 className="mt-2 text-xl font-black">ÐÐ´Ð¼Ð¸Ð½Ð¸ÑÑ‚Ñ€Ð°Ñ‚Ð¸Ð²Ð½Ð°Ñ Ñ€Ð°Ð±Ð¾Ñ‚Ð°</h2>
+            <p className="mt-2 text-xs text-slate-400">ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð´Ð°Ð½Ð½Ñ‹Ñ…, Ð¼Ð¾Ð´ÐµÑ€Ð°Ñ†Ð¸Ñ, Ð¶Ð°Ð»Ð¾Ð±Ñ‹, Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ð¸ Ð¸ Ð±ÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑ‚ÑŒ Ð¿Ð»Ð°Ñ‚Ñ„Ð¾Ñ€Ð¼Ñ‹.</p>
+          </div>
+
+          <div className="p-4 space-y-2">
+            {[
+              ['ÐÐ½Ð°Ð»Ð¸Ñ‚Ð¸ÐºÐ°', `${trips.length} Ð¿Ð¾ÐµÐ·Ð´Ð¾Ðº`],
+              ['ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¹', `${driverProfiles.filter(profile => profile.verificationStatus === VerificationStatus.PendingVerification).length} Ð¾Ð¶Ð¸Ð´Ð°ÑŽÑ‚`],
+              ['Ð–Ð°Ð»Ð¾Ð±Ñ‹ Ð¸ ÑÐ¿Ð¾Ñ€Ñ‹', `${complaints.filter(complaint => complaint.status === ComplaintStatus.Open).length} Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¾`],
+              ['ÐŸÐ¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ð¸', `${users.length} Ð°ÐºÐºÐ°ÑƒÐ½Ñ‚Ð¾Ð²`],
+              ['ÐœÐ°Ñ€ÑˆÑ€ÑƒÑ‚Ñ‹ Ð¸ Ð³Ð¾Ñ€Ð¾Ð´Ð°', `${suggestedDirections.filter(item => item.status === 'pending').length} Ð·Ð°ÑÐ²Ð¾Ðº`]
+            ].map(([label, meta]) => (
+              <button key={label} className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 text-left transition-colors">
+                <span className="block text-xs font-black text-white">{label}</span>
+                <span className="block text-[10px] text-slate-400">{meta}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="p-4 border-t border-slate-800 space-y-3">
+            <div className="rounded-xl bg-slate-900 border border-slate-800 p-3">
+              <p className="text-[10px] uppercase text-slate-500 font-black">Ð¢ÐµÐºÑƒÑ‰Ð¸Ð¹ Ð°Ð´Ð¼Ð¸Ð½</p>
+              <p className="text-sm font-bold">{adminUser.fullName}</p>
+              <p className="text-xs text-slate-400">{adminUser.phone}</p>
+            </div>
+            <button onClick={handleAdminLogout} className="w-full h-11 rounded-xl bg-white text-slate-950 text-xs font-black">
+              Ð’Ñ‹Ð¹Ñ‚Ð¸ Ð¸Ð· Ð°Ð´Ð¼Ð¸Ð½-Ð¿Ð°Ð½ÐµÐ»Ð¸
+            </button>
+          </div>
+        </aside>
+
+        <section className="lg:col-span-9 h-180 bg-slate-950/20 rounded-2xl border border-slate-800 overflow-hidden">
+          <AdminDashboard
+            users={users}
+            trips={trips}
+            complaints={complaints}
+            driverProfiles={driverProfiles}
+            vehicles={vehicles}
+            suggestedDirections={suggestedDirections}
+            adminNote={adminNote}
+            setAdminNote={setAdminNote}
+            onApproveDriver={handleAdminApproveDriver}
+            onRejectDriver={handleAdminRejectDriver}
+            onToggleUserActive={handleAdminToggleUserActive}
+            onResolveComplaint={handleAdminResolveComplaint}
+            onApproveDirection={handleAdminApproveDirection}
+            onRejectDirection={handleAdminRejectDirection}
+          />
+        </section>
+      </main>
+      ) : (
       <main className="grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
         
         {/* LEFT COLUMN: INTERACTIVE PHYSICAL SIMULATOR PORT (Spans 4 columns) */}
@@ -319,7 +419,7 @@ export default function App() {
             driverProfiles={driverProfiles} setDriverProfiles={setDriverProfiles}
             vehicles={vehicles} setVehicles={setVehicles}
             deviceType={deviceType} setDeviceType={setDeviceType}
-            currentUser={currentUser} setCurrentUser={setCurrentUser}
+            currentUser={currentUser} setCurrentUser={handleMobileUserChange}
             cities={cities} setCities={setCities}
             routes={routes} setRoutes={setRoutes}
             suggestedDirections={suggestedDirections} setSuggestedDirections={setSuggestedDirections}
@@ -391,11 +491,12 @@ export default function App() {
           </div>
         </div>
       </main>
+      )}
 
       {/* Footer system branding */}
       <footer className="bg-white border-t border-[#E2E8F0] px-6 py-4 text-center text-xs text-[#64748B] shrink-0 mt-auto">
         <p className="flex items-center justify-center space-x-1.5">
-          <span>© 2026 Hamroh.tj. Разработано по стандартам BlaBlaCar для Республики Таджикистан.</span>
+          <span>ï¿½ 2026 Hamroh.tj. ??????????? ?? ?????????? BlaBlaCar ??? ?????????? ???????????.</span>
         </p>
       </footer>
     </div>

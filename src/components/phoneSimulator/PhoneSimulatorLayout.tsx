@@ -4,7 +4,6 @@ import {
   Calendar,
   Compass,
   MessageSquare,
-  PlusCircle,
   Search,
   User as UserIcon,
   Users,

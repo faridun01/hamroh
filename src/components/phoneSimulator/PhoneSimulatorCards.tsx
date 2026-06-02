@@ -48,8 +48,8 @@ export function TripCard({
         </div>
         <div className="text-right pr-1">
           <p className="text-2xl font-black text-[#047857]">{shownPrice}</p>
-          <p className="text-sm font-black text-[#047857]">смн</p>
-          {trip.pricingMode === 'row' && <p className="text-[10px] font-bold text-[#64748B]">от</p>}
+          <p className="text-sm font-black text-[#047857]">???</p>
+          {trip.pricingMode === 'row' && <p className="text-[10px] font-bold text-[#64748B]">??</p>}
           <p className={`mt-3 text-sm font-black ${trip.availableSeats <= 1 ? 'text-red-600' : 'text-[#047857]'}`}>{trip.availableSeats} {labels.seatsShort}</p>
         </div>
       </div>
@@ -58,7 +58,7 @@ export function TripCard({
         <img src={driver?.avatarUrl} className="w-14 h-14 rounded-2xl object-cover" alt="" />
         <div className="flex-1 min-w-0">
           <p className="text-xl font-black truncate">{driver?.fullName?.split(' ')[0] || labels.driver} <span className="text-base font-bold">{profile?.rating || '4.8'}</span></p>
-          <p className="text-sm text-[#334155] truncate">{vehicle?.brand} {vehicle?.model} · {vehicle?.color}</p>
+          <p className="text-sm text-[#334155] truncate">{vehicle?.brand} {vehicle?.model} ï¿½ {vehicle?.color}</p>
         </div>
         {isVerified && <ShieldCheck className="w-7 h-7 text-[#10B981]" />}
       </div>
@@ -84,7 +84,7 @@ export function RequestCard({
       <div className="flex justify-between gap-3">
         <div>
           <p className="font-black">{request.fromCity} {'->'} {request.toCity}</p>
-          <p className="text-xs text-[#64748B]">{request.departureDate} в {request.departureTime}</p>
+          <p className="text-xs text-[#64748B]">{request.departureDate} ? {request.departureTime}</p>
         </div>
         <p className="font-black text-[#047857]">{money(request.desiredPrice || 0)}</p>
       </div>

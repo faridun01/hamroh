@@ -43,15 +43,15 @@ export function useBookingFlow({
 }: UseBookingFlowParams) {
   const confirmBooking = () => {
     if (!currentUser || !selectedTrip) return;
-    if (penaltyAmount > 0) return show('Ð£ Ð²Ð°Ñ ÐµÑÑ‚ÑŒ Ð½ÐµÐ¾Ð¿Ð»Ð°Ñ‡ÐµÐ½Ð½Ñ‹Ð¹ ÑˆÑ‚Ñ€Ð°Ñ„ Ð·Ð° Ð½ÐµÑÐ²ÐºÑƒ. ÐžÐ¿Ð»Ð°Ñ‚Ð¸Ñ‚Ðµ 30% Ð¾Ñ‚ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ¹ Ð¿Ð¾ÐµÐ·Ð´ÐºÐ¸.');
+    if (penaltyAmount > 0) return show('У вас есть неоплаченный штраф за неявку. Оплатите 30% от предыдущей поездки.');
     const hasActiveBooking = bookings.some(booking =>
       booking.passengerId === currentUser.id &&
       ![BookingStatus.Completed, BookingStatus.CancelledByPassenger, BookingStatus.CancelledByDriver, BookingStatus.Rejected, BookingStatus.NoShowPassenger, BookingStatus.NoShowDriver].includes(booking.status)
     );
-    if (hasActiveBooking) return show('Ð£ Ð¿Ð°ÑÑÐ°Ð¶Ð¸Ñ€Ð° Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¾Ð´Ð½Ð° Ð°ÐºÑ‚ÑƒÐ°Ð»ÑŒÐ½Ð°Ñ Ð¿Ð¾ÐµÐ·Ð´ÐºÐ°. Ð—Ð°Ð²ÐµÑ€ÑˆÐ¸Ñ‚Ðµ Ð¸Ð»Ð¸ Ð¾Ñ‚Ð¼ÐµÐ½Ð¸Ñ‚Ðµ Ñ‚ÐµÐºÑƒÑ‰ÑƒÑŽ.');
+    if (hasActiveBooking) return show('У пассажира может быть только одна актуальная поездка. Завершите или отмените текущую.');
     const seats = Math.max(1, Math.min(selectedSeats, selectedTrip.availableSeats));
     const seatPrice = rowPriceForTrip(selectedTrip, selectedSeatRow);
-    if (selectedTrip.availableSeats < seats) return show('ÐÐµÐ´Ð¾ÑÑ‚Ð°Ñ‚Ð¾Ñ‡Ð½Ð¾ ÑÐ²Ð¾Ð±Ð¾Ð´Ð½Ñ‹Ñ… Ð¼ÐµÑÑ‚');
+    if (selectedTrip.availableSeats < seats) return show('Недостаточно свободных мест');
     const bookingId = `book_${Date.now()}`;
     const booking: Booking = {
       id: bookingId,
@@ -70,8 +70,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: selectedTrip.driverId,
-        title: 'ÐÐ¾Ð²Ð°Ñ Ð±Ñ€Ð¾Ð½ÑŒ',
-        message: `${currentUser.fullName} Ð¿Ñ€Ð¾ÑÐ¸Ñ‚ ${seats} Ð¼ÐµÑÑ‚(Ð°): ${selectedTrip.fromCity} -> ${selectedTrip.toCity}`,
+        title: 'Новая бронь',
+        message: `${currentUser.fullName} просит ${seats} мест(а): ${selectedTrip.fromCity} -> ${selectedTrip.toCity}`,
         type: 'booking_request',
         tripId: selectedTrip.id,
         bookingId,
@@ -83,13 +83,13 @@ export function useBookingFlow({
     setSelectedBookingId(bookingId);
     setScreen('passenger');
     setPassengerTab('trips');
-    show('Ð—Ð°Ð¿Ñ€Ð¾Ñ Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŽ. ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹ Ð¾Ñ‚ÐºÑ€Ð¾ÑŽÑ‚ÑÑ Ð¿Ð¾ÑÐ»Ðµ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´ÐµÐ½Ð¸Ñ.');
+    show('Запрос отправлен водителю. Контакты откроются после подтверждения.');
   };
 
   const cancelBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
     if (!trip) return;
-    if (booking.status !== BookingStatus.Pending && !isCancelWindowOpen(booking)) return show('ÐžÑ‚Ð¼ÐµÐ½Ð° Ð±ÐµÐ· ÑˆÑ‚Ñ€Ð°Ñ„Ð° Ð´Ð¾ÑÑ‚ÑƒÐ¿Ð½Ð° Ñ‚Ð¾Ð»ÑŒÐºÐ¾ 10 Ð¼Ð¸Ð½ÑƒÑ‚ Ð¿Ð¾ÑÐ»Ðµ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´ÐµÐ½Ð¸Ñ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼');
+    if (booking.status !== BookingStatus.Pending && !isCancelWindowOpen(booking)) return show('Отмена без штрафа доступна только 10 минут после подтверждения водителем');
     setBookings(prev => prev.map(item => item.id === booking.id ? { ...item, status: BookingStatus.CancelledByPassenger } : item));
     if (booking.status === BookingStatus.Accepted) {
       setTrips(prev => prev.map(item => item.id === booking.tripId ? { ...item, availableSeats: item.availableSeats + booking.seatsCount, status: TripStatus.Published } : item));
@@ -98,8 +98,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: trip.driverId,
-        title: 'ÐŸÐ°ÑÑÐ°Ð¶Ð¸Ñ€ Ð¾Ñ‚Ð¼ÐµÐ½Ð¸Ð» Ð±Ñ€Ð¾Ð½ÑŒ',
-        message: 'ÐžÑ‚Ð¼ÐµÐ½Ð° Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð° Ð² Ð¿ÐµÑ€Ð²Ñ‹Ðµ 10 Ð¼Ð¸Ð½ÑƒÑ‚ Ð¿Ð¾ÑÐ»Ðµ Ð±Ñ€Ð¾Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ.',
+        title: 'Пассажир отменил бронь',
+        message: 'Отмена выполнена в первые 10 минут после бронирования.',
         type: 'booking_cancelled',
         tripId: booking.tripId,
         bookingId: booking.id,
@@ -108,7 +108,7 @@ export function useBookingFlow({
       },
       ...prev
     ]);
-    show('Ð‘Ñ€Ð¾Ð½ÑŒ Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð° Ð±ÐµÐ· ÑˆÑ‚Ñ€Ð°Ñ„Ð°');
+    show('Бронь отменена без штрафа');
   };
 
   const cancelBookingByDriver = (booking: Booking) => {
@@ -123,8 +123,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: booking.passengerId,
-        title: 'Ð’Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŒ Ð¾Ñ‚Ð¼ÐµÐ½Ð¸Ð» Ð±Ñ€Ð¾Ð½ÑŒ',
-        message: 'Ð‘Ñ€Ð¾Ð½ÑŒ Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð°: ÑÑ‚Ð¾Ñ€Ð¾Ð½Ñ‹ Ð½Ðµ Ð´Ð¾Ð³Ð¾Ð²Ð¾Ñ€Ð¸Ð»Ð¸ÑÑŒ Ð¿Ð¾ Ð´ÐµÑ‚Ð°Ð»ÑÐ¼ Ð¿Ð¾ÐµÐ·Ð´ÐºÐ¸.',
+        title: 'Водитель отменил бронь',
+        message: 'Бронь отменена: стороны не договорились по деталям поездки.',
         type: 'booking_cancelled_by_driver',
         tripId: booking.tripId,
         bookingId: booking.id,
@@ -133,12 +133,12 @@ export function useBookingFlow({
       },
       ...prev
     ]);
-    show('Ð‘Ñ€Ð¾Ð½ÑŒ Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð°');
+    show('Бронь отменена');
   };
 
   const acceptBooking = (booking: Booking) => {
     const trip = trips.find(item => item.id === booking.tripId);
-    if (!trip || trip.availableSeats < booking.seatsCount) return show('ÐÐµÐ´Ð¾ÑÑ‚Ð°Ñ‚Ð¾Ñ‡Ð½Ð¾ ÑÐ²Ð¾Ð±Ð¾Ð´Ð½Ñ‹Ñ… Ð¼ÐµÑÑ‚');
+    if (!trip || trip.availableSeats < booking.seatsCount) return show('Недостаточно свободных мест');
     const acceptedAt = new Date();
     const cancellationDeadlineAt = new Date(acceptedAt.getTime() + 10 * 60 * 1000);
     setBookings(prev => prev.map(item => item.id === booking.id ? {
@@ -156,8 +156,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: booking.passengerId,
-        title: 'Ð‘Ñ€Ð¾Ð½ÑŒ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´ÐµÐ½Ð°',
-        message: 'ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ñ‹. Ð£ Ð²Ð°Ñ ÐµÑÑ‚ÑŒ 10 Ð¼Ð¸Ð½ÑƒÑ‚, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¾Ð±ÑÑƒÐ´Ð¸Ñ‚ÑŒ Ð´ÐµÑ‚Ð°Ð»Ð¸ Ð¸ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ñ‚ÑŒ, Ñ‡Ñ‚Ð¾ Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÐ´ÐµÑ‚Ðµ.',
+        title: 'Бронь подтверждена',
+        message: 'Контакты открыты. У вас есть 10 минут, чтобы обсудить детали и подтвердить, что точно едете.',
         type: 'booking_accepted',
         tripId: booking.tripId,
         bookingId: booking.id,
@@ -177,8 +177,8 @@ export function useBookingFlow({
         {
           id: `notif_${Date.now()}`,
           userId: trip.driverId,
-          title: 'ÐŸÐ°ÑÑÐ°Ð¶Ð¸Ñ€ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð» Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ',
-          message: 'ÐŸÐ°ÑÑÐ°Ð¶Ð¸Ñ€ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð», Ñ‡Ñ‚Ð¾ Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÐ´ÐµÑ‚.',
+          title: 'Пассажир подтвердил поездку',
+          message: 'Пассажир подтвердил, что точно едет.',
           type: 'passenger_final_confirmed',
           tripId: booking.tripId,
           bookingId: booking.id,
@@ -188,7 +188,7 @@ export function useBookingFlow({
         ...prev
       ]);
     }
-    show('Ð’Ñ‹ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð»Ð¸, Ñ‡Ñ‚Ð¾ Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÐ´ÐµÑ‚Ðµ');
+    show('Вы подтвердили, что точно едете');
   };
 
   const confirmDriverRide = (booking: Booking) => {
@@ -199,8 +199,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: booking.passengerId,
-        title: 'Ð’Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŒ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð» Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ',
-        message: 'Ð’Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŒ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð», Ñ‡Ñ‚Ð¾ Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÐ´ÐµÑ‚.',
+        title: 'Водитель подтвердил поездку',
+        message: 'Водитель подтвердил, что точно едет.',
         type: 'driver_final_confirmed',
         tripId: booking.tripId,
         bookingId: booking.id,
@@ -209,7 +209,7 @@ export function useBookingFlow({
       },
       ...prev
     ]);
-    show('Ð’Ñ‹ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð´Ð¸Ð»Ð¸, Ñ‡Ñ‚Ð¾ Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÐ´ÐµÑ‚Ðµ');
+    show('Вы подтвердили, что точно едете');
   };
 
   const rejectBooking = (booking: Booking) => {
@@ -219,8 +219,8 @@ export function useBookingFlow({
       {
         id: `notif_${Date.now()}`,
         userId: booking.passengerId,
-        title: 'Ð‘Ñ€Ð¾Ð½ÑŒ Ð¾Ñ‚ÐºÐ»Ð¾Ð½ÐµÐ½Ð°',
-        message: 'Ð—Ð°Ð¿Ñ€Ð¾Ñ Ð¾Ñ‚ÐºÐ»Ð¾Ð½ÐµÐ½. ÐœÐ¾Ð¶Ð½Ð¾ Ð²ÐµÑ€Ð½ÑƒÑ‚ÑŒÑÑ Ðº Ð¿Ð¾Ð¸ÑÐºÑƒ Ð¸ Ð²Ñ‹Ð±Ñ€Ð°Ñ‚ÑŒ Ð´Ñ€ÑƒÐ³ÑƒÑŽ Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ.',
+        title: 'Бронь отклонена',
+        message: 'Запрос отклонен. Можно вернуться к поиску и выбрать другую поездку.',
         type: 'booking_rejected',
         tripId: trip?.id,
         bookingId: booking.id,
@@ -239,8 +239,8 @@ export function useBookingFlow({
       ...tripBookings.map(booking => ({
         id: `notif_${Date.now()}_${booking.id}`,
         userId: booking.passengerId,
-        title: 'ÐžÑ†ÐµÐ½Ð¸Ñ‚Ðµ Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ',
-        message: 'ÐŸÐ¾ÐµÐ·Ð´ÐºÐ° Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð°. ÐŸÐ¾Ð¶Ð°Ð»ÑƒÐ¹ÑÑ‚Ð°, Ð¾ÑÑ‚Ð°Ð²ÑŒÑ‚Ðµ Ð¾Ñ‚Ð·Ñ‹Ð².',
+        title: 'Оцените поездку',
+        message: 'Поездка завершена. Пожалуйста, оставьте отзыв.',
         type: 'review_request',
         tripId,
         bookingId: booking.id,
@@ -266,8 +266,8 @@ export function useBookingFlow({
       ...tripBookings.map(booking => ({
         id: `notif_${Date.now()}_${booking.id}`,
         userId: booking.passengerId,
-        title: 'ÐŸÐ¾ÐµÐ·Ð´ÐºÐ° Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð°',
-        message: 'Ð’Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŒ Ð¾Ñ‚Ð¼ÐµÐ½Ð¸Ð» Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ. Ð’Ñ‹ Ð¼Ð¾Ð¶ÐµÑ‚Ðµ Ð½Ð°Ð¹Ñ‚Ð¸ Ð´Ñ€ÑƒÐ³ÑƒÑŽ Ð¿Ð¾ÐµÐ·Ð´ÐºÑƒ Ð¸Ð»Ð¸ ÑÐ¾Ð·Ð´Ð°Ñ‚ÑŒ Ð·Ð°ÑÐ²ÐºÑƒ.',
+        title: 'Поездка отменена',
+        message: 'Водитель отменил поездку. Вы можете найти другую поездку или создать заявку.',
         type: 'trip_cancelled_by_driver',
         tripId,
         bookingId: booking.id,
@@ -276,7 +276,7 @@ export function useBookingFlow({
       })),
       ...prev
     ]);
-    show('ÐŸÐ¾ÐµÐ·Ð´ÐºÐ° Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð°');
+    show('Поездка отменена');
   };
 
   return {

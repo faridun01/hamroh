@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FLUTTER_CODE, ASPNET_CODE } from '../codeTemplates';
-import { Play, Copy, Check, FileText, Smartphone, Database, Terminal, Settings } from 'lucide-react';
+import { Play, Copy, Check, FileText, Smartphone, Database, Terminal } from 'lucide-react';
 
 export default function DeveloperDocs() {
   const [activeTab, setActiveTab ] = useState<'flutter' | 'aspnet' | 'api' | 'db_schema'>('flutter');
@@ -407,7 +407,7 @@ export default function DeveloperDocs() {
               </div>
               <ul className="text-[11px] font-mono space-y-1.5 text-slate-400">
                 <li><b className="text-slate-200">id</b>: <span className="text-sky-400">Guid (PK)</span></li>
-                <li><b className="text-slate-200">driverId</b>: <span className="text-sky-400">Guid (FK → Users)</span></li>
+                <li><b className="text-slate-200">driverId</b>: <span className="text-sky-400">Guid (FK ? Users)</span></li>
                 <li><b className="text-slate-200">brand / model</b>: <span className="text-teal-400">nvarchar(50)</span></li>
                 <li><b className="text-slate-200">plateNumber</b>: <span className="text-teal-400">nvarchar(15)</span></li>
                 <li><b className="text-slate-200">seats</b>: <span className="text-pink-400">int</span></li>
@@ -439,8 +439,8 @@ export default function DeveloperDocs() {
               </div>
               <ul className="text-[11px] font-mono space-y-1.5 text-slate-400">
                 <li><b className="text-slate-200">id</b>: <span className="text-sky-400">Guid (PK)</span></li>
-                <li><b className="text-slate-200">tripId</b>: <span className="text-sky-400">Guid (FK → Trips)</span></li>
-                <li><b className="text-slate-200">passengerId</b>: <span className="text-sky-400">Guid (FK → Users)</span></li>
+                <li><b className="text-slate-200">tripId</b>: <span className="text-sky-400">Guid (FK ? Trips)</span></li>
+                <li><b className="text-slate-200">passengerId</b>: <span className="text-sky-400">Guid (FK ? Users)</span></li>
                 <li><b className="text-slate-200">seatsCount</b>: <span className="text-pink-400">int</span></li>
                 <li><b className="text-slate-200">status</b>: <span className="text-purple-400">Enum (BookingStatus)</span></li>
                 <li><b className="text-slate-200">totalPrice</b>: <span className="text-amber-500">decimal</span></li>

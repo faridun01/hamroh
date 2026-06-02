@@ -21,10 +21,10 @@ import {
   TripStatus, 
   BookingStatus,
   ComplaintType,
-  ComplaintStatus,
-  PaymentMethod,
-  PaymentStatus
+  ComplaintStatus
 } from './types';
+
+export const CITIES: City[] = [
 
 export const CITIES: City[] = [
   { id: '1', nameRu: 'Душанбе', nameTj: 'Душанбе', isActive: true },
@@ -34,8 +34,6 @@ export const CITIES: City[] = [
   { id: '5', nameRu: 'Панджакент', nameTj: 'Панҷакент', isActive: true },
   { id: '6', nameRu: 'Турсунзода', nameTj: 'Турсунзода', isActive: true },
   { id: '7', nameRu: 'Истаравшан', nameTj: 'Истаравшан', isActive: true },
-  { id: '8', nameRu: 'Исфара', nameTj: 'Исфара', isActive: true },
-  { id: '9', nameRu: 'Канибадам', nameTj: 'Конибодом', isActive: true },
 ];
 
 export const ROUTES: Route[] = [
@@ -53,13 +51,13 @@ export const ROUTES: Route[] = [
 export const SEED_USERS: User[] = [
   {
     id: 'demo_passenger',
-    fullName: 'Демо Пассажир',
+  {
     phone: '+992501000001',
     password: '7171',
     gender: 'male',
     role: UserRole.Passenger,
     language: Language.RU,
-    city: 'Душанбе',
+    role: UserRole.Passenger,
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
     isActive: true,
     createdAt: '2026-05-28T08:00:00Z',
@@ -67,13 +65,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'demo_driver',
-    fullName: 'Демо Водитель',
+  {
     phone: '+992501000002',
     password: '7171',
     gender: 'male',
     role: UserRole.Driver,
     language: Language.RU,
-    city: 'Душанбе',
+    role: UserRole.Driver,
     avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150',
     isActive: true,
     createdAt: '2026-05-28T08:00:00Z',
@@ -81,13 +79,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'u1',
-    fullName: 'Сомон Файзуллаев',
+  {
     phone: '+992900111111',
     password: '7171',
     gender: 'male',
     role: UserRole.Driver,
     language: Language.RU,
-    city: 'Душанбе',
+    role: UserRole.Driver,
     avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
     isActive: true,
     createdAt: '2026-01-10T12:00:00Z',
@@ -95,13 +93,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'u2',
-    fullName: 'Алишер Каримов',
+  {
     phone: '+992933222222',
     password: '7171',
     gender: 'male',
     role: UserRole.Driver,
     language: Language.TJ,
-    city: 'Худжанд',
+    role: UserRole.Driver,
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
     isActive: true,
     createdAt: '2026-02-15T09:30:00Z',
@@ -109,13 +107,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'u3',
-    fullName: 'Дилшод Назаров',
+  {
     phone: '+992918333333',
     password: '7171',
     gender: 'male',
     role: UserRole.Passenger,
     language: Language.RU,
-    city: 'Душанбе',
+    role: UserRole.Passenger,
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
     isActive: true,
     createdAt: '2026-03-01T14:20:00Z',
@@ -123,13 +121,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'u4',
-    fullName: 'Мадина Саидова',
+  {
     phone: '+992901444444',
     password: '7171',
     gender: 'female',
     role: UserRole.Passenger,
     language: Language.TJ,
-    city: 'Худжанд',
+    role: UserRole.Passenger,
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
     isActive: true,
     createdAt: '2026-04-10T16:00:00Z',
@@ -137,13 +135,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'u5',
-    fullName: 'Фаррух Рахимов',
+  {
     phone: '+992985123456',
     password: '7171',
     gender: 'male',
     role: UserRole.Driver, // Needs admin approval to simulate Admin Action!
     language: Language.RU,
-    city: 'Бохтар',
+    role: UserRole.Driver, // Needs admin approval to simulate Admin Action!
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
     isActive: true,
     createdAt: '2026-05-20T08:00:00Z',
@@ -151,13 +149,13 @@ export const SEED_USERS: User[] = [
   },
   {
     id: 'admin1',
-    fullName: 'Администратор Hamroh',
+  {
     phone: '+992999999999',
     password: '7171',
     gender: 'male',
     role: UserRole.Admin,
     language: Language.RU,
-    city: 'Душанбе',
+    role: UserRole.Admin,
     avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150',
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z',
@@ -225,7 +223,7 @@ export const SEED_VEHICLES: Vehicle[] = [
     driverId: 'demo_driver',
     brand: 'Toyota',
     model: 'Camry',
-    color: 'Белый',
+    brand: 'Toyota',
     plateNumber: '0011 TJ 01',
     seats: 4,
     photoUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=300',
@@ -236,7 +234,7 @@ export const SEED_VEHICLES: Vehicle[] = [
     driverId: 'u1',
     brand: 'Toyota',
     model: 'Camry',
-    color: 'Белый жемчуг',
+    brand: 'Toyota',
     plateNumber: '7777 TJ 01',
     seats: 4,
     photoUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=300',
@@ -247,7 +245,7 @@ export const SEED_VEHICLES: Vehicle[] = [
     driverId: 'u2',
     brand: 'Opel',
     model: 'Astra H',
-    color: 'Серебристый',
+    brand: 'Opel',
     plateNumber: '1212 TJ 02',
     seats: 4,
     photoUrl: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=300',
@@ -258,7 +256,7 @@ export const SEED_VEHICLES: Vehicle[] = [
     driverId: 'u5',
     brand: 'Hyundai',
     model: 'Elantra',
-    color: 'Черный',
+    brand: 'Hyundai',
     plateNumber: '8888 TJ 03',
     seats: 4,
     photoUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=300',
@@ -276,14 +274,14 @@ export const SEED_TRIPS = (): Trip[] => {
       id: 't_demo_1',
       driverId: 'demo_driver',
       vehicleId: 'v_demo_driver',
-      fromCity: 'Душанбе',
-      toCity: 'Худжанд',
+      driverId: 'demo_driver',
+      vehicleId: 'v_demo_driver',
       departureDate: '2026-05-25',
       departureTime: '08:30',
-      pickupPoint: 'Терминал Чорбог',
+      departureDate: '2026-05-25',
       pickupLatitude: 38.5598,
       pickupLongitude: 68.7870,
-      dropoffPoint: 'Панчшанбе',
+      pickupLatitude: 38.5598,
       dropoffLatitude: 40.2826,
       dropoffLongitude: 69.6222,
       intermediateStops: [],
@@ -298,18 +296,18 @@ export const SEED_TRIPS = (): Trip[] => {
       musicAllowed: true,
       familyFriendly: true,
       womenFriendly: true,
-      comment: 'Демо-поездка для теста: после бронирования сразу открываются телефон, номер машины и чат.'
+      familyFriendly: true,
     },
     {
       id: 't_demo_2',
       driverId: 'u1',
       vehicleId: 'v1',
-      fromCity: 'Душанбе',
-      toCity: 'Худжанд',
+      driverId: 'u1',
+      vehicleId: 'v1',
       departureDate: '2026-05-25',
       departureTime: '10:15',
-      pickupPoint: 'ЦУМ',
-      dropoffPoint: 'Центр',
+      pickupPoint: '???',
+      departureTime: '10:15',
       intermediateStops: [],
       pricePerSeat: 150,
       totalSeats: 4,
@@ -322,18 +320,18 @@ export const SEED_TRIPS = (): Trip[] => {
       musicAllowed: true,
       familyFriendly: false,
       womenFriendly: false,
-      comment: 'Быстрая демо-поездка для проверки сортировки по времени и цене.'
+      familyFriendly: false,
     },
     {
       id: 't_demo_3',
       driverId: 'u2',
       vehicleId: 'v2',
-      fromCity: 'Душанбе',
-      toCity: 'Худжанд',
+      driverId: 'u2',
+      vehicleId: 'v2',
       departureDate: '2026-05-25',
       departureTime: '14:00',
-      pickupPoint: 'Водоканал',
-      dropoffPoint: 'Автовокзал',
+      departureDate: '2026-05-25',
+      departureTime: '14:00',
       intermediateStops: [],
       pricePerSeat: 100,
       totalSeats: 4,
@@ -346,18 +344,18 @@ export const SEED_TRIPS = (): Trip[] => {
       musicAllowed: true,
       familyFriendly: true,
       womenFriendly: false,
-      comment: 'Дешёвая демо-поездка для проверки сортировки.'
+      familyFriendly: true,
     },
     {
       id: 't1',
       driverId: 'u1',
       vehicleId: 'v1',
-      fromCity: 'Душанбе',
-      toCity: 'Худжанд',
+      driverId: 'u1',
+      vehicleId: 'v1',
       departureDate: todayStr,
       departureTime: '08:30',
-      pickupPoint: 'Автовокзал Чортут (Душанбе)',
-      dropoffPoint: 'Пятачок Душанбе (Худжанд)',
+      departureDate: todayStr,
+      departureTime: '08:30',
       intermediateStops: [],
       pricePerSeat: 180,
       totalSeats: 4,
@@ -369,18 +367,18 @@ export const SEED_TRIPS = (): Trip[] => {
       airConditioner: true,
       musicAllowed: true,
       familyFriendly: true,
-      comment: 'Еду через перевал Шахристан, машина мягкая, кондиционер работает отлично. Комфортная поездка.'
+      musicAllowed: true,
     },
     {
       id: 't2',
       driverId: 'u2',
       vehicleId: 'v2',
-      fromCity: 'Худжанд',
-      toCity: 'Душанбе',
+      driverId: 'u2',
+      vehicleId: 'v2',
       departureDate: todayStr,
       departureTime: '13:00',
-      pickupPoint: 'Универмаг (Микрорайон 3)',
-      dropoffPoint: 'Водонасосная (Душанбе)',
+      departureDate: todayStr,
+      departureTime: '13:00',
       intermediateStops: [],
       pricePerSeat: 150,
       totalSeats: 4,
@@ -392,18 +390,18 @@ export const SEED_TRIPS = (): Trip[] => {
       airConditioner: false,
       musicAllowed: true,
       familyFriendly: false,
-      comment: 'Быстрая поездка без лишних остановок. В салоне играет музыка.'
+      musicAllowed: true,
     },
     {
       id: 't3',
       driverId: 'u1',
       vehicleId: 'v1',
-      fromCity: 'Душанбе',
-      toCity: 'Куляб',
+      driverId: 'u1',
+      vehicleId: 'v1',
       departureDate: tomorrowStr,
       departureTime: '10:00',
-      pickupPoint: 'Пятачок Куляба (ТЭЦ)',
-      dropoffPoint: 'Центральный Автовокзал Куляба',
+      departureDate: tomorrowStr,
+      departureTime: '10:00',
       intermediateStops: [],
       pricePerSeat: 80,
       totalSeats: 4,
@@ -415,18 +413,18 @@ export const SEED_TRIPS = (): Trip[] => {
       airConditioner: true,
       musicAllowed: true,
       familyFriendly: true,
-      comment: 'Спокойная поездка, остановка в Дангаре на перекус.'
+      musicAllowed: true,
     },
     {
       id: 't4',
       driverId: 'u2',
       vehicleId: 'v2',
-      fromCity: 'Душанбе',
-      toCity: 'Бохтар',
+      driverId: 'u2',
+      vehicleId: 'v2',
       departureDate: todayStr,
       departureTime: '16:45',
-      pickupPoint: 'Пятачок Бохтара (Саховат)',
-      dropoffPoint: 'Центральный базар Бохтара',
+      departureDate: todayStr,
+      departureTime: '16:45',
       intermediateStops: [],
       pricePerSeat: 45,
       totalSeats: 4,
@@ -438,7 +436,7 @@ export const SEED_TRIPS = (): Trip[] => {
       airConditioner: true,
       musicAllowed: true,
       familyFriendly: true,
-      comment: 'Регулярная поездка домой.'
+      musicAllowed: true,
     }
   ];
 };
@@ -451,7 +449,7 @@ export const SEED_BOOKINGS: Booking[] = [
     seatsCount: 1,
     status: BookingStatus.Accepted,
     totalPrice: 180,
-    passengerMessage: 'Здравствуйте, есть ли место возле окна?'
+    status: BookingStatus.Accepted,
   },
   {
     id: 'b2',
@@ -460,7 +458,7 @@ export const SEED_BOOKINGS: Booking[] = [
     seatsCount: 2,
     status: BookingStatus.Pending,
     totalPrice: 90,
-    passengerMessage: 'Едем вдвоем с сестрой, сумки будут.'
+    status: BookingStatus.Pending,
   }
 ];
 
@@ -475,7 +473,7 @@ export const SEED_REVIEWS: Review[] = [
     punctualityRating: 5,
     cleanlinessRating: 5,
     politenessRating: 5,
-    comment: 'Отличный водитель! Ехал аккуратно, машина чистая, кондиционер работал всю дорогу. Буду ехать с ним еще!',
+    cleanlinessRating: 5,
     createdAt: '2026-05-18T16:00:00Z'
   },
   {
@@ -488,7 +486,7 @@ export const SEED_REVIEWS: Review[] = [
     punctualityRating: 5,
     cleanlinessRating: 4,
     politenessRating: 4,
-    comment: 'Доехали очень быстро. Машина немного уставшая, но Алишер - классный водитель.',
+    cleanlinessRating: 4,
     createdAt: '2026-05-19T20:00:00Z'
   }
 ];
@@ -500,7 +498,7 @@ export const SEED_COMPLAINTS: Complaint[] = [
     tripId: 't2',
     bookingId: 'b2',
     type: ComplaintType.PriceChanged,
-    description: 'Водитель попросил на 20 сомони больше при посадке, утверждая, что бензин подорожал.',
+    bookingId: 'b2',
     status: ComplaintStatus.Open,
     createdAt: '2026-05-21T06:10:00Z'
   }
@@ -510,8 +508,8 @@ export const SEED_NOTIFICATIONS: Notification[] = [
   {
     id: 'n1',
     userId: 'u3',
-    title: 'Поездка забронирована!',
-    message: 'Ваше место на поездку Душанбе → Худжанд успешно забронировано.',
+    id: 'n1',
+    userId: 'u3',
     type: 'booking_accepted',
     isRead: false,
     createdAt: '2026-05-22T05:30:00Z'
@@ -519,8 +517,8 @@ export const SEED_NOTIFICATIONS: Notification[] = [
   {
     id: 'n2',
     userId: 'u1',
-    title: 'Запрос на бронирование',
-    message: 'Мадина подала заявку на 2 места на вашу поездку Душанбе → Бохтар.',
+    id: 'n2',
+    userId: 'u1',
     type: 'booking_request',
     isRead: false,
     createdAt: '2026-05-22T05:45:00Z'
@@ -529,6 +527,8 @@ export const SEED_NOTIFICATIONS: Notification[] = [
 
 // TRANSLATIONS
 export const TRANSLATIONS = {
+  [Language.RU]: {
+    // Welcome / Credentials
   [Language.RU]: {
     // Welcome / Credentials
     app_slogan: 'Надёжные поездки между городами Таджикистана',
@@ -547,14 +547,14 @@ export const TRANSLATIONS = {
     enter_otp: 'Введите СМС-код',
     simulated_otp_desc: 'Для симуляции MVP введите код: 7171',
     error_otp: 'Неверный СМС-код. Попробуйте еще раз.',
-    success_login: 'Вы успешно авторизовались!',
-    start: 'Начать сафар',
+
+    // Passenger Home
 
     // Passenger Home
     nav_find: 'Найти',
     nav_my_trips: 'Мои поездки',
     nav_chat: 'Сообщения',
-    nav_notifications: 'Уведомления',
+
     nav_profile: 'Профиль',
 
     search_title: 'Куда едем сегодня?',
@@ -562,8 +562,8 @@ export const TRANSLATIONS = {
     to_city: 'Куда (Город)',
     date: 'Дата отправления',
     passengers_count: 'Количество мест',
-    baggage_checkbox: 'Есть багаж',
-    search_btn: 'Найти поездку',
+
+    // Filter and Results
 
     // Filter and Results
     filters: 'Фильтры',
@@ -573,8 +573,8 @@ export const TRANSLATIONS = {
     family_friendly: 'Семейная поездка',
     results_found: 'Найдено поездок',
     seats_left: 'мест осталось',
-    no_trips_found: 'К сожалению, поездок по этому маршруту на эту дату не найдено.',
-    no_trips_found_desc: 'Попробуйте изменить параметры поиска или дату.',
+
+    // Trip details
 
     // Trip details
     details_title: 'Информация о поездке',
@@ -598,12 +598,12 @@ export const TRANSLATIONS = {
     ac_on: 'Кондиционер есть',
     ac_off: 'Без кондиционера',
     family_only: 'Семейная',
-    cash_pay: 'Оплата наличными водителю',
-    not_verified_banner: 'СPlate и телефон будут видны после подтверждения поездки',
+
+    // Driver screen
 
     // Driver screen
     driver_nav_home: 'Главная',
-    driver_nav_create: 'Создать',
+    
     driver_nav_requests: 'Заявки',
     
     verified_driver_badge: 'Проверенный водитель',
@@ -613,18 +613,18 @@ export const TRANSLATIONS = {
     driver_stats: 'Ваша статистика',
     driver_rating: 'Рейтинг водителя',
     total_trips: 'Всего поездок',
-    earned: 'Заработано',
+    
     publish_trip: 'Опубликовать поездку',
     
     create_trip_title: 'Создать сафар',
     price_per_seat: 'Стоимость за 1 место (сомони)',
-    recommended_price: 'Рекомендуемая цена: ',
-    comment_placeholder: 'Напишите важные детали (где будете ждать, марка машины, во сколько выезд и т.д.)',
+
+    // My Trips tabs
 
     // My Trips tabs
     tab_active: 'Активные',
-    tab_completed: 'Завершённые',
-    tab_cancelled: 'Отменённые',
+
+    // General terms
 
     // General terms
     tjs: 'сомони',
@@ -633,19 +633,19 @@ export const TRANSLATIONS = {
     pending_booking: 'Ожидает одобрения',
     accepted_booking: 'Подтверждено',
     rejected_booking: 'Отклонено',
-    cancelled_booking: 'Отменено',
-    completed_booking: 'Завершено',
+
+    // Action confirmation modals
 
     // Action confirmation modals
     confirm_booking_title: 'Подтверждение бронирования',
     confirm_booking_desc: 'Вы бронируете {seats} место(а) за {price} сомони.',
     confirm_booking_send: 'Отправить запрос',
-    booking_success: 'Заявка отправлена!',
-    booking_success_desc: 'Водитель получил вашу заявку и скоро свяжется с вами или подтвердит бронь.',
 
     // Language selector
-    lang_name: 'Русский',
+
   },
+  [Language.TJ]: {
+    // Welcome / Credentials
   [Language.TJ]: {
     // Welcome / Credentials
     app_slogan: 'Сафарҳои боэътимод байни шаҳрҳои Тоҷикистон',
@@ -664,14 +664,14 @@ export const TRANSLATIONS = {
     enter_otp: 'Рамзи СМС-ро ворид кунед',
     simulated_otp_desc: 'Барои симулятсияи MVP ворид кунед: 7171',
     error_otp: 'Рамзи СМС нодуруст аст. Аз нав кӯшиш кунед.',
-    success_login: 'Шумо бо муваффақият ворид шудед!',
-    start: 'Оғози сафар',
+
+    // Passenger Home
 
     // Passenger Home
     nav_find: 'Ёфтан',
     nav_my_trips: 'Сафарҳо',
     nav_chat: 'Паёмҳо',
-    nav_notifications: 'Огоҳиҳо',
+
     nav_profile: 'Профил',
 
     search_title: 'Имрӯз ба куҷо меравем?',
@@ -679,8 +679,8 @@ export const TRANSLATIONS = {
     to_city: 'Ба куҷо (Шаҳр)',
     date: 'Санаи равонашавӣ',
     passengers_count: 'Шумораи ҷойҳо',
-    baggage_checkbox: 'Борхалта ҳаст',
-    search_btn: 'Ҷустуҷӯи сафар',
+
+    // Filter and Results
 
     // Filter and Results
     filters: 'Филтрҳо',
@@ -690,8 +690,8 @@ export const TRANSLATIONS = {
     family_friendly: 'Сафари оилавӣ',
     results_found: 'Сафарҳо ёфт шуданд',
     seats_left: 'ҷой мондааст',
-    no_trips_found: 'Мутаассифона, дар ин самт ягон сафар ёфт нашуд.',
-    no_trips_found_desc: 'Параметрҳо ё санаи ҷустуҷӯро тағйир диҳед.',
+
+    // Trip details
 
     // Trip details
     details_title: 'Тафсилоти сафар',
@@ -715,12 +715,12 @@ export const TRANSLATIONS = {
     ac_on: 'Кондиционер ҳаст',
     ac_off: 'Бе кондиционер',
     family_only: 'Оилавӣ',
-    cash_pay: 'Пардохти нақдӣ ба ронанда',
-    not_verified_banner: 'Рақам ва телефони ронанда пас аз тасдиқ намоён мешаванд',
+
+    // Driver screen
 
     // Driver screen
     driver_nav_home: 'Асосӣ',
-    driver_nav_create: 'Эҷод',
+
     driver_nav_requests: 'Дархостҳо',
 
     verified_driver_badge: 'Ронандаи тасдиқшуда',
@@ -730,18 +730,18 @@ export const TRANSLATIONS = {
     driver_stats: 'Омори шумо',
     driver_rating: 'Рейтинги ронанда',
     total_trips: 'Миқдори сафарҳо',
-    earned: 'Маблағи коркарда',
+
     publish_trip: 'Сафарро эълон кардан',
 
     create_trip_title: 'Эҷоди сафар',
     price_per_seat: 'Нархи як ҷой (сомонӣ)',
-    recommended_price: 'Нархи тавсияшаванда: ',
-    comment_placeholder: 'Тафсилоти муҳимро нависед (ҷои интизорӣ, ранги мошин, соати ҳаракат ва г.)',
+
+    // My Trips tabs
 
     // My Trips tabs
     tab_active: 'Фаъол',
-    tab_completed: 'Завершённые', // "Анҷомёфта"
-    tab_cancelled: 'Ботилшуда',
+
+    // General terms
 
     // General terms
     tjs: 'сомонӣ',
@@ -750,18 +750,16 @@ export const TRANSLATIONS = {
     pending_booking: 'Мунтазири тасдиқ',
     accepted_booking: 'Тасдиқшуда',
     rejected_booking: 'Радшуда',
-    cancelled_booking: 'Бекоршуда',
-    completed_booking: 'Анҷомёфта',
+
+    // Action confirmation modals
 
     // Action confirmation modals
     confirm_booking_title: 'Тасдиқи бандкунӣ',
     confirm_booking_desc: 'Шумо {seats} ҷойро ба маблағи {price} сомонӣ фармоиш медиҳед.',
     confirm_booking_send: 'Фиристодани дархост',
-    booking_success: 'Дархост фиристода шуд!',
-    booking_success_desc: 'Ронанда дархостро гирифт ва ба наздикӣ бо шумо тамос мегирад.',
 
     // Language selector
-    lang_name: 'Тоҷикӣ',
+
   },
   [Language.EN]: {
     // Welcome / Credentials

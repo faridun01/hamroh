@@ -257,7 +257,7 @@ export default function AuthScreens({
                   <input value={carBrand} onChange={event => setCarBrand(event.target.value)} className={inputClass} placeholder="Марка" />
                   <input value={carModel} onChange={event => setCarModel(event.target.value)} className={inputClass} placeholder="Модель" />
                   <input value={carColor} onChange={event => setCarColor(event.target.value)} className={inputClass} placeholder="Цвет" />
-                  <input value={carYear} onChange={event => setCarYear(event.target.value)} className={inputClass} placeholder="Год" />
+                  <input value={carYear} onChange={event => setCarYear(event.target.value)} className={inputClass} placeholder="???" />
                 </div>
                 <input value={carPlate} onChange={event => setCarPlate(event.target.value)} className={inputClass} placeholder="Гос. номер" />
                 <input value={carSeats} onChange={event => setCarSeats(Number(event.target.value))} className={inputClass} type="number" placeholder="Мест" />

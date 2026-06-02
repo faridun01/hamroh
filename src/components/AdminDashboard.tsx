@@ -1,10 +1,8 @@
 import { CheckCircle, ShieldCheck } from 'lucide-react';
 import {
-  City,
   Complaint,
   ComplaintStatus,
   DriverProfile,
-  Route,
   SuggestedDirection,
   Trip,
   User,
@@ -60,18 +58,18 @@ export default function AdminDashboard({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label="Всего поездок" value={trips.length} valueClass="text-slate-100" />
         <StatCard label="Активные на проверке" value={pendingDrivers.length} valueClass="text-amber-400" />
-        <StatCard label="Жалобы Open" value={openComplaints.length} valueClass="text-rose-500" />
-        <StatCard label="Зарегистрировано" value={users.length} valueClass="text-sky-400" />
       </div>
 
       <section className="space-y-3">
-        <SectionHeader title="Заявки на верификацию водителей" badge="В ручном режиме" />
+
         {pendingDrivers.length === 0 ? (
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-xl text-center">
             <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <p className="text-xs text-slate-400 italic">Все водители и транспортные средства верифицированы.</p>
+          <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-xl text-center">
           </div>
         ) : (
           <div className="space-y-3">
@@ -86,22 +84,22 @@ export default function AdminDashboard({
                       <img src={driver?.avatarUrl} className="w-9 h-9 rounded-full border border-slate-700" alt="" />
                       <div className="text-left">
                         <span className="block font-bold text-xs text-white">{driver?.fullName}</span>
-                        <span className="block text-[10px] text-slate-400">{driver?.phone} · {driver?.city}</span>
+                        <span className="block text-[10px] text-slate-400">{driver?.phone} ï¿½ {driver?.city}</span>
                       </div>
                     </div>
 
                     <div className="text-[11px] font-mono text-slate-400 leading-normal pl-2 border-l-2 border-slate-800 space-y-0.5">
-                      <div><b>Лицензия ВУ:</b> {profile.licenseNumber || 'Не заполнено'}</div>
-                      <div><b>Автомобиль:</b> {vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.color}) [${vehicle.plateNumber}]` : 'Автомобиль не добавлен'}</div>
+
+                    <div className="text-[11px] font-mono text-slate-400 leading-normal pl-2 border-l-2 border-slate-800 space-y-0.5">
                     </div>
                   </div>
 
                   <div className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 shrink-0">
                     <button onClick={() => onApproveDriver(profile.userId)} className="flex-1 md:w-28 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg text-center transition-colors">
-                      Подтвердить ВУ
+                  <div className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 shrink-0">
                     </button>
                     <button onClick={() => onRejectDriver(profile.userId)} className="flex-1 md:w-28 bg-rose-950/40 hover:bg-rose-950 text-rose-500 border border-rose-900/40 font-bold text-xs py-1.5 px-3 rounded-lg text-center transition-all">
-                      Отклонить
+                    </button>
                     </button>
                   </div>
                 </div>
@@ -112,9 +110,9 @@ export default function AdminDashboard({
       </section>
 
       <section className="space-y-3">
-        <SectionHeader title="Арбитраж и жалобы" badge="Служба безопасности" danger />
+
         {complaints.length === 0 ? (
-          <p className="text-xs text-slate-500 italic">Жалоб от пассажиров на данный момент нет.</p>
+        <SectionHeader title="Арбитраж и жалобы" badge="Служба безопасности" danger />
         ) : (
           <div className="space-y-3">
             {complaints.map(complaint => {
@@ -124,31 +122,31 @@ export default function AdminDashboard({
               return (
                 <div key={complaint.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center bg-slate-950 px-3 py-1.5 rounded-lg text-[10px]">
-                    <span className="font-bold text-slate-300">Автор: {complainee?.fullName}</span>
+                <div key={complaint.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
                     <span className={`px-1.5 py-0.5 rounded font-mono uppercase ${isResolved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
                       {complaint.status}
                     </span>
                   </div>
 
                   <p className="text-xs text-slate-300 leading-normal bg-slate-950/40 p-2.5 rounded border border-slate-950/60">
-                    <b>Суть конфликта:</b> {complaint.description}
+
                   </p>
 
                   {isResolved ? (
                     <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded">
-                      <b>Решение администратора:</b> {complaint.adminNote}
+                  {isResolved ? (
                     </div>
                   ) : (
                     <div className="flex flex-col sm:flex-row items-stretch gap-2">
                       <input
                         type="text"
-                        placeholder="Решение администратора перед закрытием"
+                      <input
                         value={adminNote[complaint.id] || ''}
                         onChange={event => setAdminNote({ ...adminNote, [complaint.id]: event.target.value })}
                         className="flex-1 bg-slate-950 border border-slate-800 text-xs px-3 py-1 text-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
                       />
                       <button onClick={() => onResolveComplaint(complaint.id)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-[10px] py-1 px-4 rounded-lg transition-colors shadow">
-                        Разрешить спор
+                      />
                       </button>
                     </div>
                   )}
@@ -160,9 +158,9 @@ export default function AdminDashboard({
       </section>
 
       <section className="space-y-3">
-        <SectionHeader title="Новые города и направления от пользователей" badge="Требует одобрения" />
+
         {suggestedDirections.length === 0 ? (
-          <p className="text-xs text-slate-500 italic">Нет предложенных направлений.</p>
+        <SectionHeader title="Новые города и направления от пользователей" badge="Требует одобрения" />
         ) : (
           <div className="space-y-3">
             {suggestedDirections.map(suggestion => (
@@ -179,7 +177,7 @@ export default function AdminDashboard({
 
       <section className="space-y-3">
         <div className="border-b border-slate-800 pb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Сводный реестр пользователей Hamroh</span>
+      <section className="space-y-3">
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden">
@@ -188,18 +186,18 @@ export default function AdminDashboard({
               <div className="flex items-center space-x-2.5">
                 <img src={user.avatarUrl} className="w-8 h-8 rounded-full border border-slate-800" alt="" />
                 <div className="text-left">
-                  <span className="block font-bold text-white">{user.fullName} {user.role === UserRole.Admin ? '🛡️' : ''}</span>
-                  <span className="text-[10px] text-slate-400">{user.phone} · {user.role}</span>
+                  <span className="block font-bold text-white">{user.fullName} {user.role === UserRole.Admin ? '???' : ''}</span>
+                  <span className="text-[10px] text-slate-400">{user.phone} ï¿½ {user.role}</span>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${user.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-500'}`}>
-                  {user.isActive ? 'Активен' : 'Заблокирован'}
+              <div className="flex items-center space-x-2">
                 </span>
                 {user.id !== 'admin1' && (
                   <button onClick={() => onToggleUserActive(user.id)} className={`text-[9px] font-bold py-1 px-2.5 rounded transition-all ${user.isActive ? 'bg-rose-950/40 hover:bg-rose-950 text-rose-400' : 'bg-emerald-500 text-slate-950 hover:bg-emerald-600'}`}>
-                    {user.isActive ? 'Бан' : 'Разбанить'}
+                {user.id !== 'admin1' && (
                   </button>
                 )}
               </div>
@@ -249,28 +247,28 @@ function SuggestedDirectionCard({
       <div className="flex justify-between items-center bg-slate-950 px-3 py-1.5 rounded-lg text-[10px] text-slate-300 font-semibold">
         <span className="flex items-center space-x-1.5">
           <span className={`w-1.5 h-1.5 rounded-full ${suggestion.type === 'city' ? 'bg-sky-400' : 'bg-indigo-400'}`} />
-          <span>Предложил(а): {suggestion.userFullName}</span>
+        <span className="flex items-center space-x-1.5">
         </span>
         <span className={`px-2 py-0.5 rounded font-black text-[9px] uppercase ${isApproved ? 'bg-emerald-500/10 text-emerald-400' : isRejected ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'}`}>
-          {isApproved ? 'Одобрено' : isRejected ? 'Отклонено' : 'На рассмотрении'}
+        </span>
         </span>
       </div>
 
       <div className="text-xs space-y-1.5 text-left text-slate-200">
         <div>
-          <span className="text-slate-400 text-[10px] block uppercase font-mono">Тип объекта:</span>
+      <div className="text-xs space-y-1.5 text-left text-slate-200">
           <span className="font-extrabold text-white text-[11px] bg-slate-800/60 px-2 py-0.5 rounded inline-block mt-0.5">
-            {suggestion.type === 'city' ? 'Новый город' : 'Новое направление'}
+          <span className="text-slate-400 text-[10px] block uppercase font-mono">Тип объекта:</span>
           </span>
         </div>
         <div>
-          <span className="text-slate-400 text-[10px] block uppercase font-mono">Ярлык RU/TJ:</span>
+        </div>
           <span className="font-bold text-emerald-400 text-sm block tracking-tight">
-            {suggestion.nameRu} <span className="text-slate-400 font-light font-sans">({suggestion.nameTj || 'без тадж.'})</span>
+          <span className="text-slate-400 text-[10px] block uppercase font-mono">Ярлык RU/TJ:</span>
           </span>
         </div>
         <div className="bg-slate-950/60 border border-slate-900 p-2.5 rounded-lg">
-          <span className="text-slate-450 text-[10px] block uppercase font-mono mb-1">Описание:</span>
+        </div>
           <p className="text-[11.5px] text-slate-300 leading-relaxed italic pr-2 font-sans">"{suggestion.details}"</p>
         </div>
       </div>
@@ -278,10 +276,10 @@ function SuggestedDirectionCard({
       {isPending && (
         <div className="flex space-x-2 pt-1 justify-end">
           <button onClick={onApprove} className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-black text-[10.5px] py-1.5 px-4 rounded-lg transition-colors cursor-pointer shadow-md">
-            Одобрить и добавить
+        <div className="flex space-x-2 pt-1 justify-end">
           </button>
           <button onClick={onReject} className="bg-slate-800 hover:bg-slate-700 hover:text-rose-450 text-slate-300 border border-slate-700 font-bold text-[10.5px] py-1.5 px-3 rounded-lg transition-all cursor-pointer">
-            Отклонить
+          </button>
           </button>
         </div>
       )}

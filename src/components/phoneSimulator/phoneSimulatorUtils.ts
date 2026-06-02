@@ -11,11 +11,11 @@ export function timeToMinutes(value?: string) {
 }
 
 export function formatDuration(trip?: Trip) {
-  if (!trip) return '4ч 30мин';
+  if (!trip) return '4? 30???';
   const routeHours = trip.fromCity === 'Душанбе' && trip.toCity === 'Худжанд' ? 4 : 5;
   const extraMinutes = trip.pricePerSeat > 140 ? -15 : trip.pricePerSeat < 110 ? 25 : 0;
   const total = Math.max(180, routeHours * 60 + 30 + extraMinutes);
-  return `${Math.floor(total / 60)}ч ${total % 60}мин`;
+  return `${Math.floor(total / 60)}? ${total % 60}???`;
 }
 
 export function seatRowsForSeats(seats: number): Array<{ key: SeatRowKey; label: string; seats: number }> {

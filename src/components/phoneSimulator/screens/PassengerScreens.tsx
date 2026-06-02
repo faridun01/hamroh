@@ -1,15 +1,34 @@
-import type React from 'react';
-import { ArrowLeft, Car, CheckCircle, Clock, CreditCard, Home, Lock, MessageSquare, Share2, ShieldCheck, Star } from 'lucide-react';
+import { ArrowLeft, Car, CheckCircle, Clock, CreditCard, Home, MessageSquare, Share2, ShieldCheck, Star } from 'lucide-react';
 import { BookingStatus, UserRole } from '../../../types';
-import { formatDuration, money, rowPriceForTrip, seatRowsForSeats } from '../phoneSimulatorUtils';
+import { formatDuration, money, seatRowsForSeats } from '../phoneSimulatorUtils';
 
-export interface PassengerScreensProps {
+export interface PassengerAppProps {
   [key: string]: any;
 }
 
-export function PassengerApp(props: PassengerScreensProps) {
+export interface ResultsScreenProps {
+  [key: string]: any;
+}
+
+export interface TripDetailsScreenProps {
+  [key: string]: any;
+}
+
+export interface BookingScreenProps {
+  [key: string]: any;
+}
+
+export interface PassengerRequestScreenProps {
+  [key: string]: any;
+}
+
+export interface ReviewScreenProps {
+  [key: string]: any;
+}
+
+export function PassengerApp(props: PassengerAppProps) {
   const {
-    Shell, Header, CitySelect, BottomNav, MessagesPanel, NotificationsPanel, ProfilePanel, currentUser, t, penaltyAmount, setPenaltyAmount, fromCity, setFromCity, cities, language, selectClass, toCity, setToCity, date, setDate, inputClass, searchSeats, setSearchSeats, filterVerified, setFilterVerified, filterBaggage, setFilterBaggage, filterWomen, setFilterWomen, setScreen, primaryClass, tripsList, passengerTab, bookings, trips, users, hiddenChatUserIds, setHiddenChatUserIds, chatUserId, setChatUserId, chats, chatInput, setChatInput, chatInputRef, sendChat, myNotifications, unreadNotificationsCount, openNotification, rejectBooking, acceptBooking, setNotifications, setDriverTab, setHiddenNotificationIds, driverProfiles, vehicles, setPassengerTab, setCurrentUser, driverTab, UserRole
+    Shell, CitySelect, BottomNav, MessagesPanel, NotificationsPanel, ProfilePanel, currentUser, t, penaltyAmount, setPenaltyAmount, fromCity, setFromCity, cities, language, selectClass, toCity, setToCity, date, setDate, inputClass, searchSeats, setSearchSeats, filterVerified, setFilterVerified, filterBaggage, setFilterBaggage, filterWomen, setFilterWomen, setScreen, primaryClass, tripsList, passengerTab, bookings, trips, users, hiddenChatUserIds, setHiddenChatUserIds, chatUserId, setChatUserId, chats, chatInput, setChatInput, chatInputRef, sendChat, myNotifications, unreadNotificationsCount, openNotification, rejectBooking, acceptBooking, setNotifications, setDriverTab, setHiddenNotificationIds, driverProfiles, vehicles, setPassengerTab, setCurrentUser, driverTab
   } = props;
   return (
     <Shell>
@@ -118,9 +137,9 @@ export function PassengerApp(props: PassengerScreensProps) {
   );
 }
 
-export function ResultsScreen(props: PassengerScreensProps) {
+export function ResultsScreen(props: ResultsScreenProps) {
   const {
-    Shell, Header, CitySelect, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, bookingMessage, setBookingMessage, confirmBooking, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
+    Shell, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, fromCity, toCity, date, searchSeats
   } = props;
   const sortTabs = [
       ['price', 'Сначала дешевле'],
@@ -160,9 +179,9 @@ export function ResultsScreen(props: PassengerScreensProps) {
     );
 }
 
-export function TripDetailsScreen(props: PassengerScreensProps) {
+export function TripDetailsScreen(props: TripDetailsScreenProps) {
   const {
-    Shell, Header, CitySelect, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, bookingMessage, setBookingMessage, confirmBooking, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
+    Shell, setScreen, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking
   } = props;
     const driver = userFor(selectedTrip.driverId);
     const vehicle = vehicleFor(selectedTrip.driverId);
@@ -338,9 +357,9 @@ export function TripDetailsScreen(props: PassengerScreensProps) {
     );
 }
 
-export function BookingScreen(props: PassengerScreensProps) {
+export function BookingScreen(props: BookingScreenProps) {
   const {
-    Shell, Header, CitySelect, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, bookingMessage, setBookingMessage, confirmBooking, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
+    Shell, Header, setScreen, selectedTrip, userFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookingMessage, setBookingMessage, confirmBooking, primaryClass
   } = props;
     const driver = userFor(selectedTrip.driverId);
     const vehicle = vehicleFor(selectedTrip.driverId);
@@ -405,9 +424,9 @@ export function BookingScreen(props: PassengerScreensProps) {
     );
 }
 
-export function PassengerRequestScreen(props: PassengerScreensProps) {
+export function PassengerRequestScreen(props: PassengerRequestScreenProps) {
   const {
-    Shell, Header, CitySelect, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, bookingMessage, setBookingMessage, confirmBooking, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
+    Shell, Header, CitySelect, setScreen, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, primaryClass
   } = props;
   return (
     <Shell>
@@ -455,9 +474,9 @@ export function PassengerRequestScreen(props: PassengerScreensProps) {
   );
 }
 
-export function ReviewScreen(props: PassengerScreensProps) {
+export function ReviewScreen(props: ReviewScreenProps) {
   const {
-    Shell, Header, CitySelect, setScreen, t, tripSort, setTripSort, filteredTrips, renderTripCard, selectedTrip, userFor, driverProfileFor, vehicleFor, rowPriceForTrip, selectedSeatRow, selectedSeats, setSelectedSeats, setSelectedSeatRow, bookings, tripBackTarget, show, openBooking, bookingMessage, setBookingMessage, confirmBooking, fromCity, setFromCity, toCity, setToCity, cities, language, selectClass, inputClass, date, setDate, requestPickup, setRequestPickup, setPointFromLocation, setPointFromMap, requestDropoff, setRequestDropoff, requestTime, setRequestTime, requestTimeMode, setRequestTimeMode, searchSeats, setSearchSeats, requestPrice, setRequestPrice, requestComment, setRequestComment, createPassengerRequest, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
+    Shell, Header, setScreen, show, reviewText, setReviewText, currentUser, reviewRating, setReviewRating, primaryClass
   } = props;
   return (
     <Shell>
@@ -475,4 +494,5 @@ export function ReviewScreen(props: PassengerScreensProps) {
     </Shell>
   );
 }
+
 
